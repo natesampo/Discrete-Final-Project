@@ -1,5 +1,6 @@
 public class Graph {
 	private Helper helper;
+	private int[][] adjacency;
 	
 	public Graph() {
 		final int numNodes = 100;
@@ -11,7 +12,9 @@ public class Graph {
 		
 		final int[][] properties = helper.generateProperties(numNodes, numProperties, minAttribute, maxAttribute);
 		
-		helper.arrayPrint(properties);
+		adjacency = helper.generateAdjacency(properties);
+		
+		helper.arrayPrint(adjacency);
 	}
 	
 	public static void main(String args[]) {
