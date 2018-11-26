@@ -7,6 +7,7 @@ public class Helper {
 		for(int i=0; i<properties.length; i++) {
 			for(int j=0; j<properties.length; j++) {
 				for(int k=0; k<properties[0].length; k++) {
+					// Currently sums difference of attributes. Add real weighting here
 					adjacency[i][j] += Math.abs(properties[i][k] - properties[j][k]);
 				}
 			}
@@ -20,6 +21,7 @@ public class Helper {
 		
 		for(int i=0; i<nodes; i++) {
 			for(int j=0; j<properties; j++) {
+				// Generate a random integer from the min to the max as one of the properties
 				propertiesArray[i][j] = ThreadLocalRandom.current().nextInt(min, max + 1);
 			}
 		}
@@ -28,6 +30,7 @@ public class Helper {
 	}
 	
 	public void arrayPrint(int[][] array) {
+		// Iterate through the 2D array and print every value in a way that looks nice
 		for(int i=0; i<array.length; i++) {
 			for(int j=0; j<array[i].length; j++) {
 				System.out.print(" " + array[i][j]);
