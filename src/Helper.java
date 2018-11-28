@@ -2,32 +2,38 @@ import java.util.HashSet;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Helper {
-	public int[][] generateAdjacency(int[][] properties) {
-		int[][] adjacency = new int[properties.length][properties.length];
-		
-		for(int i=0; i<properties.length; i++) {
-			for(int j=0; j<properties.length; j++) {
-				for(int k=0; k<properties[0].length; k++) {
-					// Currently sums difference of attributes. Add real weighting here
-					adjacency[i][j] += Math.abs(properties[i][k] - properties[j][k]);
-				}
-			}
-		}
-
-		return adjacency;
-	}
-	
-	public int[][] generateProperties(int nodes, int properties, int min, int max) {
-		int[][] propertiesArray = new int[nodes][properties];
+	public double[][] generateProperties(int nodes, int properties, double min, double max) {
+		double[][] propertiesArray = new double[nodes][properties];
 		
 		for(int i=0; i<nodes; i++) {
 			for(int j=0; j<properties; j++) {
 				// Generate a random integer from the min to the max as one of the properties
-				propertiesArray[i][j] = ThreadLocalRandom.current().nextInt(min, max + 1);
+				propertiesArray[i][j] = ((double) ThreadLocalRandom.current().nextInt((int) min*100, (int) max*100 + 1))/100;
 			}
 		}
 		
 		return propertiesArray;
+	}
+	
+	public double[][] normalize(double[][] array) {
+		// This is O(n^2). Little yikes but whatever
+		double max = 0.0;
+		
+		for(int i=0; i<array.length; i++) {
+			for(int j=0; j<array[i].length; j++) {
+				if(array[i][j] > max) {
+					max = array[i][j];
+				}
+			}
+		}
+		
+		for(int i=0; i<array.length; i++) {
+			for(int j=0; j<array[i].length; j++) {
+				array[i][j] = array[i][j]/max;
+			}
+		}
+		
+		return array;
 	}
 
 	private Profile generateRandomProfile(int id, int numSkills, int maxSilverBullets, int totalNumPeople) {
@@ -74,7 +80,7 @@ public class Helper {
 		return res;
 	}
 	
-	public void arrayPrint(int[][] array) {
+	public void arrayPrint(double[][] array) {
 		// Iterate through the 2D array and print every value in a way that looks nice
 		for(int i=0; i<array.length; i++) {
 			for(int j=0; j<array[i].length; j++) {
