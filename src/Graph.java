@@ -1,5 +1,3 @@
-import Helper.Profile;
-
 public class Graph {
 	private Helper helper;
 	private int cliqueSize;
@@ -9,18 +7,17 @@ public class Graph {
 	private int numNodes;
 
 	public Graph() {
-		numNodes = 100;
-		final int numProperties = 5;
+		final int numNodes = 100;
 		final int minAttribute = 0;
 		final int maxAttribute = 1;
+		final int maxSilverBullets = 5;
 		
 		cliqueSize = 4;
 
 		helper = new Helper();
-		num_teams = (int) java.lang.Math.ceil( (numNodes / cliqueSize));
+		num_teams = (int) java.lang.Math.ceil((numNodes / cliqueSize));
 
-		final Helper.Profile[] = helper.generateProfiles();
-		final double[][] properties = helper.generateProperties(numNodes, numProperties, minAttribute, maxAttribute);
+		final Helper.Profile[] profiles = helper.generateProfiles(numNodes, maxSilverBullets);
 		
 		adjacency = generateAdjacency(properties);
 		adjacency = helper.normalize(adjacency);
