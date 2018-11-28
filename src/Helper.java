@@ -81,7 +81,7 @@ public class Helper {
 	}
 	
 	public void arrayPrint(double[][] array) {
-		// Iterate through the 2D array and print every value in a way that looks nice
+		// Iterate through the 2D array and print every value in a way that looks nice (not horrible)
 		for(int i=0; i<array.length; i++) {
 			for(int j=0; j<array[i].length; j++) {
 				System.out.print(" " + array[i][j]);

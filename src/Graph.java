@@ -1,3 +1,5 @@
+import Helper.Profile;
+
 public class Graph {
 	private Helper helper;
 	private int cliqueSize;
@@ -17,7 +19,7 @@ public class Graph {
 		helper = new Helper();
 		num_teams = (int) java.lang.Math.ceil( (numNodes / cliqueSize));
 
-
+		final Helper.Profile[] = helper.generateProfiles();
 		final double[][] properties = helper.generateProperties(numNodes, numProperties, minAttribute, maxAttribute);
 		
 		adjacency = generateAdjacency(properties);
