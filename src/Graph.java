@@ -9,23 +9,25 @@ public class Graph {
 	private int numNodes;
 
 	public Graph() {
-		numNodes = 100;
-		final int numProperties = 5;
+		final int numNodes = 100;
 		final int minAttribute = 0;
 		final int maxAttribute = 1;
+		final int maxSilverBullets = 5;
+		final double skillsWeight = 0.5; // Average dot product looks to be ~1.3
+		final double preferenceWeight = 0.5;
 		
 		cliqueSize = 4;
 
 		helper = new Helper();
 		numTeams = (int) java.lang.Math.ceil( (numNodes / cliqueSize));
 
-
-		final double[][] properties = helper.generateProperties(numNodes, numProperties, minAttribute, maxAttribute);
+		final Helper.Profile[] profiles = helper.generateProfiles(numNodes, maxSilverBullets);
 		
-		adjacency = generateAdjacency(properties);
+		adjacency = generateAdjacency(profiles, skillsWeight, preferenceWeight);
 		adjacency = helper.normalize(adjacency);
 		
-		helper.arrayPrint(adjacency);
+//		helper.arrayPrint(adjacency);
+		helper.arrayPrintInt(greedyCliques());
 	}
 
 	//Returns a matrix with rows showing different teams with the first column being a score out of 100
@@ -37,16 +39,26 @@ public class Graph {
 
 		//Go through and find the highest edge.
 		for (int teamNum = 0; teamNum < numTeams; teamNum++) {
-			for (int memNum = 0; memNum < numTeams; memNum++) {
+			for (int memNum = 0; memNum < cliqueSize; memNum++) {
 				if(memNum == 0) {
 					newAdditions = highestEdge(editableAdjacency, new int[0]);
-					finalTeams[teamNum][memNum] = newAdditions[0];
+					finalTeams[teamNum][0] = newAdditions[0];
 					finalTeams[teamNum][1] = newAdditions[1];
 					memNum++;
+					for (int x = 0; x < adjacency.length; x++) {
+						editableAdjacency[newAdditions[0]][x] = -1;
+						editableAdjacency[x][newAdditions[0]] = -1;
+						editableAdjacency[newAdditions[1]][x] = -1;
+						editableAdjacency[x][newAdditions[1]] = -1;	
+					}
 				}
 				else {
 					newAdditions = highestEdge(editableAdjacency, Arrays.copyOfRange(finalTeams[teamNum], 0, memNum-1));
 					finalTeams[teamNum][memNum] = newAdditions[0];
+					for (int x = 0; x < adjacency.length; x++) {
+						editableAdjacency[newAdditions[0]][x] = -1;
+						editableAdjacency[x][newAdditions[0]] = -1;
+					}
 				}
 			}
 		}
@@ -69,7 +81,7 @@ public class Graph {
 		if(neighbors.length == 0) {
 			for(int i = 0; i < adjacency.length; i ++) {
 				for (int j = 0; j < adjacency[0].length; j++) {
-					if (adjacency[i][j] > currHigh) {
+					if (adjacency[i][j] > currHigh && i != j) {
 						currHigh = adjacency[i][j];
 						locs[0] = i;
 						locs[1] = j;
@@ -82,7 +94,7 @@ public class Graph {
 			for (int x = 0; x < neighbors.length; x++) { //loop through current members
 				tempVal = 1.0;
 				for (int j = 0; j < adjacency.length; j++) { //Loop through all other people
-					if (searchArray(neighbors, j)) {//j isn't in neighbors{
+					if (!searchArray(neighbors, j) && adjacency[x][j] >= 0 ) {//j isn't in neighbors{
 						tempVal = tempVal * adjacency[x][j];
 					}
 					
@@ -109,19 +121,30 @@ public class Graph {
 	}
 
 
-	public double[][] generateAdjacency(double[][] properties) {
-		double[][] adjacencyArray = new double[properties.length][properties.length];
+	public double[][] generateAdjacency(Helper.Profile[] profiles, double skillsWeight, double preferenceWeight) {
+		double[][] adjacencyArray = new double[profiles.length][profiles.length];
+		int silverBullet;
+		double preferredPartner;
 		
-		for(int i=0; i<properties.length; i++) {
-			for(int j=0; j<properties.length; j++) {
-				for(int k=0; k<properties[0].length; k++) {
-					// Currently sums difference of attributes. Add real weighting here
-					adjacencyArray[i][j] += Math.abs(properties[i][k] - properties[j][k]);
-				}
+		for(int i=0; i<profiles.length; i++) {
+			for(int j=0; j<profiles.length; j++) {
+				adjacencyArray[i][j] = calculateEdgeWeight(profiles[i], profiles[j], skillsWeight, preferenceWeight);
 			}
 		}
 		
 		return adjacencyArray;
+	}
+	
+	/**
+	 * Calculates the edge weight from p1 to p2.
+	 * @param p1 the profile of the starting node
+	 * @param p2 the profile of the ending node
+	 * @param skillsWeight how to weight the lack of skills overlap
+	 * @param preferenceWeight how to weight the preference overlap
+	 * @return the weight of the edge from p1 to p2, where a lower score is more desirable
+	 */
+	 public double calculateEdgeWeight(Helper.Profile p1, Helper.Profile p2, double skillsWeight, double preferenceWeight) {
+		return ((p1.silverBullets.contains(p2.id)) ? 0 : 1) * (skillsWeight * helper.dotProduct(p1.skills, p2.skills) + preferenceWeight * (p1.preferredPartners.contains(p2.id) ? 0 : 1));
 	}
 	
 	public static void main(String args[]) {
