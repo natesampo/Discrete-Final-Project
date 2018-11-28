@@ -65,22 +65,9 @@ public class Helper {
 	}
 
 	/**
-	 * Calculates the edge weight from p1 to p2.
-	 * @param p1 the profile of the starting node
-	 * @param p2 the profile of the ending node
-	 * @param skillsWeight how to weight the lack of skills overlap
-	 * @param preferenceWeight how to weight the preference overlap
-	 * @return the weight of the edge from p1 to p2, where a lower score is more desirable
-	 */
-	 public double calculateEdgeWeight(Profile p1, Profile p2, double skillsWeight, double preferenceWeight) {
-		return skillsWeight * dotProduct(p1.skills, p2.skills)
-				+ preferenceWeight * (p1.preferredPartners.contains(p2.id) ? 0 : 1);
-	}
-
-	/**
 	 * Calculates the dot product of two vectors.
 	 */
-	private double dotProduct(double[] v1, double[] v2) {
+	public double dotProduct(double[] v1, double[] v2) {
 		double res = 0.0;
 		for (int i = 0; i < v1.length; ++i) {
 			res += v1[i] * v2[i];

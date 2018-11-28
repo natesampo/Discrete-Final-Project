@@ -11,6 +11,8 @@ public class Graph {
 		final int minAttribute = 0;
 		final int maxAttribute = 1;
 		final int maxSilverBullets = 5;
+		final double skillsWeight = 0.5; // Average dot product looks to be ~1.3
+		final double preferenceWeight = 0.5;
 		
 		cliqueSize = 4;
 
@@ -19,7 +21,7 @@ public class Graph {
 
 		final Helper.Profile[] profiles = helper.generateProfiles(numNodes, maxSilverBullets);
 		
-		adjacency = generateAdjacency(properties);
+		adjacency = generateAdjacency(profiles, skillsWeight, preferenceWeight);
 		adjacency = helper.normalize(adjacency);
 		
 		helper.arrayPrint(adjacency);
@@ -51,19 +53,30 @@ public class Graph {
 	}
 
 
-	public double[][] generateAdjacency(double[][] properties) {
-		double[][] adjacencyArray = new double[properties.length][properties.length];
+	public double[][] generateAdjacency(Helper.Profile[] profiles, double skillsWeight, double preferenceWeight) {
+		double[][] adjacencyArray = new double[profiles.length][profiles.length];
+		int silverBullet;
+		double preferredPartner;
 		
-		for(int i=0; i<properties.length; i++) {
-			for(int j=0; j<properties.length; j++) {
-				for(int k=0; k<properties[0].length; k++) {
-					// Currently sums difference of attributes. Add real weighting here
-					adjacencyArray[i][j] += Math.abs(properties[i][k] - properties[j][k]);
-				}
+		for(int i=0; i<profiles.length; i++) {
+			for(int j=0; j<profiles.length; j++) {
+				adjacencyArray[i][j] = calculateEdgeWeight(profiles[i], profiles[j], skillsWeight, preferenceWeight);
 			}
 		}
 		
 		return adjacencyArray;
+	}
+	
+	/**
+	 * Calculates the edge weight from p1 to p2.
+	 * @param p1 the profile of the starting node
+	 * @param p2 the profile of the ending node
+	 * @param skillsWeight how to weight the lack of skills overlap
+	 * @param preferenceWeight how to weight the preference overlap
+	 * @return the weight of the edge from p1 to p2, where a lower score is more desirable
+	 */
+	 public double calculateEdgeWeight(Helper.Profile p1, Helper.Profile p2, double skillsWeight, double preferenceWeight) {
+		return ((p1.silverBullets.contains(p2.id)) ? 0 : 1) * (skillsWeight * helper.dotProduct(p1.skills, p2.skills) + preferenceWeight * (p1.preferredPartners.contains(p2.id) ? 0 : 1));
 	}
 	
 	public static void main(String args[]) {
