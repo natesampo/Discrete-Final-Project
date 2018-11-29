@@ -19,7 +19,7 @@ public class Graph {
 		cliqueSize = 4;
 
 		helper = new Helper();
-		numTeams = (int) java.lang.Math.ceil( (numNodes / cliqueSize));
+		numTeams = (int) java.lang.Math.ceil((numNodes / cliqueSize));
 
 		final Helper.Profile[] profiles = helper.generateProfiles(numNodes, maxSilverBullets);
 		
@@ -31,11 +31,12 @@ public class Graph {
 	}
 
 	//Returns a matrix with rows showing different teams with the first column being a score out of 100
-	public int[][] greedyCliques(){
-		double[][] editableAdjacency = adjacency;
+	public int[][] greedyCliques(){		
+		double[][] editableAdjacency = new double[adjacency.length][adjacency.length];
+		System.arraycopy(adjacency, 0, editableAdjacency, 0, adjacency.length);
 		int[] newAdditions = new int[2];
 
-		int[][] finalTeams = new int[numTeams][cliqueSize+1]; //+1 to indicate how strong the connections are. 
+		int[][] finalTeams = new int[numTeams][cliqueSize+1]; //+1 to indicate how strong the connections are.
 
 		//Go through and find the highest edge.
 		for (int teamNum = 0; teamNum < numTeams; teamNum++) {
@@ -73,7 +74,6 @@ public class Graph {
 		int[] locs = new int[2];
 		double currHigh = -1;
 		
-
 		if(neighbors.length == 0) {
 			for(int i = 0; i < adjacency.length; i ++) {
 				for (int j = 0; j < adjacency[0].length; j++) {
