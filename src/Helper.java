@@ -5,6 +5,7 @@ public class Helper {
 
 	public double[][] normalize(double[][] array) {
 		// This is O(n^2). Little yikes but whatever
+		// Normalize from minimum value (not including silver bullets which remain at 0) to maximum value
 		double max = 0.0;
 		double min = 100.0;
 		
@@ -14,7 +15,7 @@ public class Helper {
 					max = array[i][j];
 				}
 				
-				if(array[i][j] < min) {
+				if(array[i][j] != 0.0 && array[i][j] < min) {
 					min = array[i][j];
 				}
 			}
@@ -24,7 +25,8 @@ public class Helper {
 		
 		for(int i=0; i<array.length; i++) {
 			for(int j=0; j<array[i].length; j++) {
-				array[i][j] = (array[i][j]-min)/max;
+				// The lowest value should be 0, along with the silver bullets. Math.max is because silver bullets would go below 0 when subtracting min.
+				array[i][j] = Math.max((array[i][j]-min)/max, 0.0);
 			}
 		}
 		
