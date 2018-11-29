@@ -12,7 +12,7 @@ public class Graph {
 		final int numNodes = 100;
 		final int minAttribute = 0;
 		final int maxAttribute = 1;
-		final int maxSilverBullets = 5;
+		final int maxSilverBullets = 3;
 		final double skillsWeight = 0.5; // Average dot product looks to be ~1.3
 		final double preferenceWeight = 0.5;
 		
@@ -45,26 +45,22 @@ public class Graph {
 					finalTeams[teamNum][0] = newAdditions[0];
 					finalTeams[teamNum][1] = newAdditions[1];
 					memNum++;
-					for (int x = 0; x < adjacency.length; x++) {
-						editableAdjacency[newAdditions[0]][x] = -1;
-						editableAdjacency[x][newAdditions[0]] = -1;
-						editableAdjacency[newAdditions[1]][x] = -1;
-						editableAdjacency[x][newAdditions[1]] = -1;	
-					}
 				}
 				else {
 					newAdditions = highestEdge(editableAdjacency, Arrays.copyOfRange(finalTeams[teamNum], 0, memNum));
 					finalTeams[teamNum][memNum] = newAdditions[0];
-					for (int x = 0; x < adjacency.length; x++) {
-						editableAdjacency[newAdditions[0]][x] = -1;
-						editableAdjacency[x][newAdditions[0]] = -1;
-					}
 				}
+			}
+			//TODO: Also calculate total team score here
+			for (int x = 0; x < adjacency.length; x++) {
+				for (int y = 0; y < cliqueSize; y++) {
+					editableAdjacency[finalTeams[teamNum][y]][x] = -1;
+					editableAdjacency[x][finalTeams[teamNum][y]] = -1;
+				}
+				
 			}
 		}
 
-
-		//Then repeat for highest sum or edges for all nodes connected to first edge
 
 
 		return finalTeams;
