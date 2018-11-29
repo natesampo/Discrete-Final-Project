@@ -13,21 +13,22 @@ public class Graph {
 		final int minAttribute = 0;
 		final int maxAttribute = 1;
 		final int maxSilverBullets = 3;
-		final double skillsWeight = 0.5; // Average dot product looks to be ~1.3
+		final double skillsWeight = 0.2; // Average dot product looks to be ~1.3
 		final double preferenceWeight = 0.5;
+		final int numSkills = 5;
 		
 		cliqueSize = 4;
 
 		helper = new Helper();
 		numTeams = (int) java.lang.Math.ceil((numNodes / cliqueSize));
 
-		final Helper.Profile[] profiles = helper.generateProfiles(numNodes, maxSilverBullets);
+		final Helper.Profile[] profiles = helper.generateProfiles(numNodes, numSkills, maxSilverBullets);
 		
 		adjacency = generateAdjacency(profiles, skillsWeight, preferenceWeight);
 		adjacency = helper.normalize(adjacency);
 		
-//		helper.arrayPrintDouble2D(adjacency);
-		helper.arrayPrintInt2D(greedyCliques());
+		helper.arrayPrintDouble2D(adjacency);
+//		helper.arrayPrintInt2D(greedyCliques());
 	}
 
 	//Returns a matrix with rows showing different teams with the first column being a score out of 100
@@ -155,11 +156,11 @@ public class Graph {
 	 * @return the weight of the edge from p1 to p2, where a lower score is more desirable
 	 */
 	 public double calculateEdgeWeight(Helper.Profile p1, Helper.Profile p2, double skillsWeight, double preferenceWeight) {
-		return ((p1.silverBullets.contains(p2.id)) ? 0 : (skillsWeight * (1-helper.dotProduct(p1.skills, p2.skills)) + preferenceWeight * (p1.preferredPartners.contains(p2.id) ? 1 : 0)));
+		 // Silver bullet makes weight 0. 
+		return ((p1.silverBullets.contains(p2.id)) ? 0 : skillsWeight * (1-(helper.dotProduct(p1.skills, p2.skills)/p1.skills.length)) + preferenceWeight * (p1.preferredPartners.contains(p2.id) ? 1 : 0));
 	}
 	
 	public static void main(String args[]) {
-		new Graph();
-		
+		new Graph();	
 	}
 }

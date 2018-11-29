@@ -6,25 +6,32 @@ public class Helper {
 	public double[][] normalize(double[][] array) {
 		// This is O(n^2). Little yikes but whatever
 		double max = 0.0;
+		double min = 100.0;
 		
 		for(int i=0; i<array.length; i++) {
 			for(int j=0; j<array[i].length; j++) {
 				if(array[i][j] > max) {
 					max = array[i][j];
 				}
+				
+				if(array[i][j] < min) {
+					min = array[i][j];
+				}
 			}
 		}
 		
+		max -= min;
+		
 		for(int i=0; i<array.length; i++) {
 			for(int j=0; j<array[i].length; j++) {
-				array[i][j] = array[i][j]/max;
+				array[i][j] = (array[i][j]-min)/max;
 			}
 		}
 		
 		return array;
 	}
 	
-	public Profile[] generateProfiles(int nodes, int maxSilverBullets) {
+	public Profile[] generateProfiles(int nodes, int numSkills, int maxSilverBullets) {
 		/*
 		 * 5 Skills Total
 		 * 
@@ -34,7 +41,6 @@ public class Helper {
 		 * 3. Software
 		 * 4. Design
 		 */
-		int numSkills = 5;
 		Profile[] profiles = new Profile[nodes];
 		
 		for(int i=0; i<nodes; i++) {
