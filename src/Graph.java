@@ -143,7 +143,7 @@ public class Graph {
 	 * @return the weight of the edge from p1 to p2, where a lower score is more desirable
 	 */
 	 public double calculateEdgeWeight(Helper.Profile p1, Helper.Profile p2, double skillsWeight, double preferenceWeight) {
-		return ((p1.silverBullets.contains(p2.id)) ? 0 : 1) * (skillsWeight * (1-helper.dotProduct(p1.skills, p2.skills)) + preferenceWeight * (p1.preferredPartners.contains(p2.id) ? 1 : 0));
+		return ((p1.silverBullets.contains(p2.id)) ? 0 : (skillsWeight * (1-helper.dotProduct(p1.skills, p2.skills)) + preferenceWeight * (p1.preferredPartners.contains(p2.id) ? 1 : 0)));
 	}
 	
 	public static void main(String args[]) {
