@@ -53,7 +53,7 @@ public class Graph {
 					}
 				}
 				else {
-					newAdditions = highestEdge(editableAdjacency, Arrays.copyOfRange(finalTeams[teamNum], 0, memNum-1));
+					newAdditions = highestEdge(editableAdjacency, Arrays.copyOfRange(finalTeams[teamNum], 0, memNum));
 					finalTeams[teamNum][memNum] = newAdditions[0];
 					for (int x = 0; x < adjacency.length; x++) {
 						editableAdjacency[newAdditions[0]][x] = -1;
@@ -91,18 +91,21 @@ public class Graph {
 		}
 		else {
 			double tempVal;
-			for (int x = 0; x < neighbors.length; x++) { //loop through current members
+			locs[1] = -1;
+			for (int x = 0; x < adjacency.length; x++) { //loop through other members to see how good they fit
 				tempVal = 1.0;
-				for (int j = 0; j < adjacency.length; j++) { //Loop through all other people
-					if (!searchArray(neighbors, j) && adjacency[x][j] >= 0 ) {//j isn't in neighbors{
+				for (int j = 0; j < neighbors.length; j++) { //check how they fit with each other groupmember
+					if (!searchArray(neighbors, x) && adjacency[x][j] >= 0 ) {//j isn't in neighbors{
 						tempVal = tempVal * adjacency[x][j];
+					}
+					else {
+						tempVal = 0.0;
 					}
 					
 				}
 				if (tempVal > currHigh) {
 					currHigh = tempVal;
 					locs[0] = x;
-					locs[1] = -1;
 				}
 			}
 		}
