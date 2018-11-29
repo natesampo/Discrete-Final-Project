@@ -35,73 +35,52 @@ public class Graph {
 		double[][] editableAdjacency = new double[adjacency.length][adjacency.length];
 		System.arraycopy(adjacency, 0, editableAdjacency, 0, adjacency.length);
 		int[] newAdditions = new int[2];
+		int newNeighbor;
 
 		int[][] finalTeams = new int[numTeams][cliqueSize+1]; //+1 to indicate how strong the connections are.
-
-		//Go through and find the highest edge.
+		
 		for (int teamNum = 0; teamNum < numTeams; teamNum++) {
 			for (int memNum = 0; memNum < cliqueSize; memNum++) {
-				if(memNum == 0) {
-					newAdditions = highestEdge(editableAdjacency, new int[0]);
+				if(memNum == 0) { //If we need to find the highest edge (starting a new team)
+					newAdditions = highestEdge(editableAdjacency);
 					finalTeams[teamNum][0] = newAdditions[0];
 					finalTeams[teamNum][1] = newAdditions[1];
 					memNum++;
 				}
-				else {
-					newAdditions = highestEdge(editableAdjacency, Arrays.copyOfRange(finalTeams[teamNum], 0, memNum));
-					finalTeams[teamNum][memNum] = newAdditions[0];
+				else { //If we want to find the node that best fits with our current nodes
+					newNeighbor = highestNode(editableAdjacency, Arrays.copyOfRange(finalTeams[teamNum], 0, memNum));
+					finalTeams[teamNum][memNum] = newNeighbor;
 				}
 			}
 			//TODO: Also calculate total team score here
 			for (int x = 0; x < adjacency.length; x++) {
-				for (int y = 0; y < cliqueSize; y++) {
+				for (int y = 0; y < cliqueSize; y++) { //Edit the editableadjacency to make sure we don't select 
 					editableAdjacency[finalTeams[teamNum][y]][x] = -1;
 					editableAdjacency[x][finalTeams[teamNum][y]] = -1;
 				}
-				
 			}
 		}
 
-
-
 		return finalTeams;
-
 	}
 	
 	
 
-	public int[] highestEdge(double[][] adjacency, int[] neighbors) {
+	public int[] highestEdge(double[][] adjacency) {
+		/**
+		 * Looking at the current adjacency matrix, find the edge with the highest value and return the corresponding nodes
+		 * input: adjacency (double[][]) -- The adjacency matrix
+		 * output: locs (int[2]) -- locations of nodes whose edge is highest. 
+		 */
 		int[] locs = new int[2];
 		double currHigh = -1;
 		
-		if(neighbors.length == 0) {
-			for(int i = 0; i < adjacency.length; i ++) {
-				for (int j = 0; j < adjacency[0].length; j++) {
-					if (adjacency[i][j] > currHigh && i != j) {
-						currHigh = adjacency[i][j];
-						locs[0] = i;
-						locs[1] = j;
-					}
-				}
-			}
-		}
-		else {
-			double tempVal;
-			locs[1] = -1;
-			for (int x = 0; x < adjacency.length; x++) { //loop through other members to see how good they fit
-				tempVal = 1.0;
-				for (int j = 0; j < neighbors.length; j++) { //check how they fit with each other groupmember
-					if (!searchArray(neighbors, x) && adjacency[x][j] >= 0 ) {//j isn't in neighbors{
-						tempVal = tempVal * adjacency[x][j];
-					}
-					else {
-						tempVal = 0.0;
-					}
-					
-				}
-				if (tempVal > currHigh) {
-					currHigh = tempVal;
-					locs[0] = x;
+		for(int i = 0; i < adjacency.length; i ++) {
+			for (int j = 0; j < adjacency[0].length; j++) {
+				if (adjacency[i][j] > currHigh && i != j) { //Loop through, finding and updating highest edge
+					currHigh = adjacency[i][j];
+					locs[0] = i;
+					locs[1] = j;
 				}
 			}
 		}
@@ -109,8 +88,41 @@ public class Graph {
 		return locs;
 	}
 	
-	public boolean searchArray(int[] list, int val) {
+	public int highestNode(double[][] adjacency, int[] neighbors) {
+		/**
+		 * Looking at the current adjacency matrix, find the edge with the highest value and return the corresponding nodes
+		 * input: adjacency (double[][]) -- The adjacency matrix
+		 * input: neighbors (int[]) -- A list of the current nodes in the group (or neighbors we are looking at)
+		 * output: loc (int) -- location of node who fits best. 
+		 */
+		int loc = -1;
+		double currHigh = -1;
+		double tempVal;
+		for (int x = 0; x < adjacency.length; x++) { //loop through other members to see how good they fit
+			tempVal = 1.0;
+			for (int j = 0; j < neighbors.length; j++) { //check how they fit with each other groupmember
+				if (!searchArray(neighbors, x) && adjacency[x][j] >= 0 ) {//j isn't in neighbors{
+					tempVal = tempVal * adjacency[x][j];
+				}
+				else {
+					tempVal = 0.0;
+				}
+				
+			}
+			if (tempVal > currHigh) {
+				currHigh = tempVal;
+				loc = x;
+			}
+		}
 		
+		return loc;
+	
+	}
+	
+	public boolean searchArray(int[] list, int val) {
+		/*
+		 * Searches an array for a value, because array.contains wasn't liking me.
+		 */
 		for (int x = 0; x < list.length; x++) {
 			if (list[x] == val) {
 				return true;
