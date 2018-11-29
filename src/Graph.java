@@ -26,8 +26,8 @@ public class Graph {
 		adjacency = generateAdjacency(profiles, skillsWeight, preferenceWeight);
 		adjacency = helper.normalize(adjacency);
 		
-//		helper.arrayPrint(adjacency);
-		helper.arrayPrintInt(greedyCliques());
+//		helper.arrayPrintDouble2D(adjacency);
+		helper.arrayPrintInt2D(greedyCliques());
 	}
 
 	//Returns a matrix with rows showing different teams with the first column being a score out of 100

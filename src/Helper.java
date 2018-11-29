@@ -75,7 +75,7 @@ public class Helper {
 		return res;
 	}
 	
-	public void arrayPrint(double[][] array) {
+	public void arrayPrintDouble2D(double[][] array) {
 		// Iterate through the 2D array and print every value in a way that looks nice (not horrible)
 		for(int i=0; i<array.length; i++) {
 			for(int j=0; j<array[i].length; j++) {
@@ -85,7 +85,7 @@ public class Helper {
 		}
 	}
 	
-	public void arrayPrintInt(int[][] array) {
+	public void arrayPrintInt2D(int[][] array) {
 		// Iterate through the 2D array and print every value in a way that looks nice (not horrible)
 		for(int i=0; i<20; i++) {
 			for(int j=0; j<array[i].length; j++) {
