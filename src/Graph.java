@@ -8,11 +8,11 @@ public class Graph {
 	
 	private int numNodes;
 
-	public Graph() {
-		final int numNodes = 100;
+public Graph() {
+		final int numNodes = 24;
 		final int minAttribute = 0;
 		final int maxAttribute = 1;
-		final int maxSilverBullets = 3;
+		final int maxSilverBullets = 0;
 		final double skillsWeight = 0.2; // Average dot product looks to be ~1.3
 		final double preferenceWeight = 0.5;
 		final int numSkills = 5;
@@ -27,8 +27,8 @@ public class Graph {
 		adjacency = generateAdjacency(profiles, skillsWeight, preferenceWeight);
 		adjacency = helper.normalize(adjacency);
 		
-		helper.arrayPrintDouble2D(adjacency);
-//		helper.arrayPrintInt2D(greedyCliques());
+//		helper.arrayPrintDouble2D(adjacency);
+		helper.arrayPrintInt2D(greedyCliques());
 	}
 
 	//Returns a matrix with rows showing different teams with the first column being a score out of 100
@@ -54,10 +54,10 @@ public class Graph {
 				}
 			}
 			//TODO: Also calculate total team score here
-			for (int x = 0; x < adjacency.length; x++) {
-				for (int y = 0; y < cliqueSize; y++) { //Edit the editableadjacency to make sure we don't select 
-					editableAdjacency[finalTeams[teamNum][y]][x] = -1;
-					editableAdjacency[x][finalTeams[teamNum][y]] = -1;
+			for (int rowCol = 0; rowCol < adjacency.length; rowCol++) {
+				for (int currMem = 0; currMem < cliqueSize; currMem++) { //Edit the editableadjacency to make sure we don't select 
+					editableAdjacency[finalTeams[teamNum][currMem]][rowCol] = -1;
+					editableAdjacency[rowCol][finalTeams[teamNum][currMem]] = -1;
 				}
 			}
 		}
@@ -102,8 +102,8 @@ public class Graph {
 		for (int x = 0; x < adjacency.length; x++) { //loop through other members to see how good they fit
 			tempVal = 1.0;
 			for (int j = 0; j < neighbors.length; j++) { //check how they fit with each other groupmember
-				if (!searchArray(neighbors, x) && adjacency[x][j] >= 0 ) {//j isn't in neighbors{
-					tempVal = tempVal * adjacency[x][j];
+				if (!searchArray(neighbors, x) && adjacency[x][neighbors[j]] >= 0) {//j isn't in neighbors{
+					tempVal = tempVal * adjacency[x][neighbors[j]];
 				}
 				else {
 					tempVal = 0.0;
@@ -112,7 +112,7 @@ public class Graph {
 			}
 			if (tempVal > currHigh) {
 				currHigh = tempVal;
-				loc = x;
+				loc = x; 
 			}
 		}
 		
