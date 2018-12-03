@@ -12,7 +12,7 @@ public Graph() {
 		final int numNodes = 24;
 		final int minAttribute = 0;
 		final int maxAttribute = 1;
-		final int maxSilverBullets = 0;
+		final int maxSilverBullets = 2;
 		final double skillsWeight = 0.2; // Average dot product looks to be ~1.3
 		final double preferenceWeight = 0.5;
 		final int numSkills = 5;
@@ -28,17 +28,17 @@ public Graph() {
 		adjacency = helper.normalize(adjacency);
 		
 //		helper.arrayPrintDouble2D(adjacency);
-		helper.arrayPrintInt2D(greedyCliques());
+		helper.arrayPrintDouble2D(greedyCliques());
 	}
 
 	//Returns a matrix with rows showing different teams with the first column being a score out of 100
-	public int[][] greedyCliques(){		
-		double[][] editableAdjacency = new double[adjacency.length][adjacency.length];
-		System.arraycopy(adjacency, 0, editableAdjacency, 0, adjacency.length);
+	public double[][] greedyCliques(){		
+		double[][] editableAdjacency = arrayCopy(adjacency);
+//		System.arraycopy(adjacency, 0, editableAdjacency, 0, adjacency.length);
 		int[] newAdditions = new int[2];
 		int newNeighbor;
 
-		int[][] finalTeams = new int[numTeams][cliqueSize+1]; //+1 to indicate how strong the connections are.
+		double[][] finalTeams = new double[numTeams][cliqueSize+1]; //+1 to indicate how strong the connections are.
 		
 		for (int teamNum = 0; teamNum < numTeams; teamNum++) {
 			for (int memNum = 0; memNum < cliqueSize; memNum++) {
@@ -56,13 +56,57 @@ public Graph() {
 			//TODO: Also calculate total team score here
 			for (int rowCol = 0; rowCol < adjacency.length; rowCol++) {
 				for (int currMem = 0; currMem < cliqueSize; currMem++) { //Edit the editableadjacency to make sure we don't select 
-					editableAdjacency[finalTeams[teamNum][currMem]][rowCol] = -1;
-					editableAdjacency[rowCol][finalTeams[teamNum][currMem]] = -1;
+					if(finalTeams[teamNum][currMem] >= 0) {
+						editableAdjacency[(int) finalTeams[teamNum][currMem]][rowCol] = -1;
+						editableAdjacency[rowCol][(int) finalTeams[teamNum][currMem]] = -1;
+					}
 				}
 			}
 		}
-
+		
+		double tempScore;
+		int col;
+		int row;
+		boolean badTeamingExperience;
+		for (int teamNum = 0; teamNum < numTeams; teamNum++) {
+			tempScore = 1.0; 
+			badTeamingExperience = false;
+			for (int memNum = 0; memNum < cliqueSize; memNum++) {
+				for(int otherMem = memNum + 1; otherMem < cliqueSize; otherMem++) {
+					col = (int) finalTeams[teamNum][memNum];
+					row = (int) finalTeams[teamNum][otherMem];
+					if (row <0 || col < 0) {
+						System.out.println("INVALID TEAM.");
+						badTeamingExperience = true;
+						break;
+					}
+					else {
+						tempScore = tempScore*adjacency[col][row];
+					}
+				}
+				if(badTeamingExperience) {
+					break;
+				}
+			}
+			if(badTeamingExperience) {
+				finalTeams[teamNum][cliqueSize] = -1;
+			}
+			else {
+				finalTeams[teamNum][cliqueSize] = tempScore;
+			}
+		}
+		
 		return finalTeams;
+	}
+	
+	public double[][] arrayCopy(double[][] arrayIn) {
+		double[][] temparr = new double[arrayIn.length][arrayIn[0].length];
+		for (int i = 0; i < arrayIn.length; i++) {
+			for (int j = 0; j < arrayIn[0].length; j++) {
+				temparr[i][j] = arrayIn[i][j];
+			}
+		}
+		return temparr;
 	}
 	
 	
@@ -89,7 +133,38 @@ public Graph() {
 		return locs;
 	}
 	
-	public int highestNode(double[][] adjacency, int[] neighbors) {
+	/*
+	 * Do the thing where we have a second Greedy algorithm that Skips the top (numToIgnore) edges for the first two members of a group
+	 */
+	public int[] highestEdgeV2(double[][] adjacency, int numToIgnore) {
+		/**
+		 * Looking at the current adjacency matrix, find the edge with the highest value and return the corresponding nodes. New fuctionality: numToIgnore, which allows ignoring of top x edges in an attempt to make a series of teams which work together
+		 * input: adjacency (double[][]) -- The adjacency matrix
+		 * output: locs (int[2]) -- locations of nodes whose edge is highest. 
+		 */
+		int[] locs = new int[2];
+		double currHigh = -1;
+		int numIgnored = 0;
+		
+		for(int i = 0; i < adjacency.length; i ++) {
+			for (int j = 0; j < adjacency[0].length; j++) {
+				if (adjacency[i][j] > currHigh && i != j) { //Loop through, finding and updating highest edge
+					if(numIgnored < numToIgnore) {
+						
+					}
+					else {
+						currHigh = adjacency[i][j];
+						locs[0] = i;
+						locs[1] = j;
+					}
+				}
+			}
+		}
+		
+		return locs;
+	}
+	
+	public int highestNode(double[][] adjacency, double[] neighbors) {
 		/**
 		 * Looking at the current adjacency matrix, find the edge with the highest value and return the corresponding nodes
 		 * input: adjacency (double[][]) -- The adjacency matrix
@@ -97,13 +172,13 @@ public Graph() {
 		 * output: loc (int) -- location of node who fits best. 
 		 */
 		int loc = -1;
-		double currHigh = -1;
+		double currHigh = 0.0;
 		double tempVal;
 		for (int x = 0; x < adjacency.length; x++) { //loop through other members to see how good they fit
 			tempVal = 1.0;
 			for (int j = 0; j < neighbors.length; j++) { //check how they fit with each other groupmember
-				if (!searchArray(neighbors, x) && adjacency[x][neighbors[j]] >= 0) {//j isn't in neighbors{
-					tempVal = tempVal * adjacency[x][neighbors[j]];
+				if (!searchArray(neighbors, x) && adjacency[x][(int) neighbors[j]] >= 0) {//j isn't in neighbors{
+					tempVal = tempVal * adjacency[x][(int) neighbors[j]];
 				}
 				else {
 					tempVal = 0.0;
@@ -120,7 +195,7 @@ public Graph() {
 	
 	}
 	
-	public boolean searchArray(int[] list, int val) {
+	public boolean searchArray(double[] list, int val) {
 		/*
 		 * Searches an array for a value, because array.contains wasn't liking me.
 		 */
@@ -157,7 +232,7 @@ public Graph() {
 	 */
 	 public double calculateEdgeWeight(Helper.Profile p1, Helper.Profile p2, double skillsWeight, double preferenceWeight) {
 		 // Silver bullet makes weight 0. 
-		return ((p1.silverBullets.contains(p2.id)) ? 0 : skillsWeight * (1-(helper.dotProduct(p1.skills, p2.skills)/p1.skills.length)) + preferenceWeight * (p1.preferredPartners.contains(p2.id) ? 1 : 0));
+		return (((p1.silverBullets.contains(p2.id) || p2.silverBullets.contains(p1.id))) ? 0 : skillsWeight * (1-(helper.dotProduct(p1.skills, p2.skills)/p1.skills.length)) + preferenceWeight * (p1.preferredPartners.contains(p2.id) ? 1 : 0));
 	}
 	
 	public static void main(String args[]) {
