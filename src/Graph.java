@@ -10,7 +10,7 @@ public class Graph {
 	private HashSet<Integer> coloredClique;
 
 public Graph() {
-		final int numNodes = 24;
+		final int numNodes = 100;
 		final int maxSilverBullets = 2;
 		final double skillsWeight = 0.2; // Average dot product looks to be ~1.3
 		final double preferenceWeight = 0.5;
@@ -32,18 +32,25 @@ public Graph() {
 		visitedNodes = new HashSet<Integer>();
 		for (int i=0; i<numNodes; i++) {
 			if (!visitedNodes.contains(i)) {
-				coloredClique = getNodeColoredClique(i, new HashSet<Integer>(), 0.8);
+				coloredClique = getNodeColoredClique(i, new HashSet<Integer>(), 0.95);
 				helper.hashSetPrintInt(coloredClique);
 				visitedNodes.addAll(coloredClique);
 			}
 		}
 	}
 
+	// Recursive strategy of finding cliques by traveling along edges that are above minWeight
 	public HashSet<Integer> getNodeColoredClique(int node, HashSet<Integer> connected, double minWeight) {
+		// Connected is a hashset of nodes belonging to this clique, add this node to the clique
 		connected.add(node);
 		
+		// Loop through all of this node's edges and check for other nodes to add to the clique
 		for (int i=0; i<adjacency[node].length; i++) {
+			
+			// If this node is not already in the clique and the edge is above minWeight
 			if (!connected.contains(i) && adjacency[node][i] > minWeight) {
+				
+				// Travel to this node and continue to add nodes to the clique from there
 				getNodeColoredClique(i, connected, minWeight);
 			}
 		}
