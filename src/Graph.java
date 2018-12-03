@@ -10,7 +10,7 @@ public class Graph {
 	private HashSet<Integer> coloredClique;
 
 public Graph() {
-		final int numNodes = 100;
+		final int numNodes = 24;
 		final int maxSilverBullets = 2;
 		final double skillsWeight = 0.2; // Average dot product looks to be ~1.3
 		final double preferenceWeight = 0.5;
@@ -26,17 +26,16 @@ public Graph() {
 		adjacency = generateAdjacency(profiles, skillsWeight, preferenceWeight);
 		adjacency = helper.normalize(adjacency);
 		
-//		helper.arrayPrintDouble2D(adjacency);
-//		helper.arrayPrintInt2D(greedyCliques());
+		helper.arrayPrintDouble2D(greedyCliques());
 		
-		visitedNodes = new HashSet<Integer>();
-		for (int i=0; i<numNodes; i++) {
-			if (!visitedNodes.contains(i)) {
-				coloredClique = getNodeColoredClique(i, new HashSet<Integer>(), 0.95);
-				helper.hashSetPrintInt(coloredClique);
-				visitedNodes.addAll(coloredClique);
-			}
-		}
+//		visitedNodes = new HashSet<Integer>();
+//		for (int i=0; i<numNodes; i++) {
+//			if (!visitedNodes.contains(i)) {
+//				coloredClique = getNodeColoredClique(i, new HashSet<Integer>(), 0.95);
+//				helper.hashSetPrintInt(coloredClique);
+//				visitedNodes.addAll(coloredClique);
+//			}
+//		}
 	}
 
 	// Recursive strategy of finding cliques by traveling along edges that are above minWeight
@@ -60,7 +59,7 @@ public Graph() {
 
 	//Returns a matrix with rows showing different teams with the first column being a score out of 100
 	public double[][] greedyCliques(){		
-		double[][] editableAdjacency = arrayCopy(adjacency);
+		double[][] editableAdjacency = helper.arrayCopy(adjacency);
 //		System.arraycopy(adjacency, 0, editableAdjacency, 0, adjacency.length);
 		int[] newAdditions = new int[2];
 		int newNeighbor;
@@ -122,20 +121,8 @@ public Graph() {
 				finalTeams[teamNum][cliqueSize] = tempScore;
 			}
 		}
-		
 		return finalTeams;
 	}
-	
-	public double[][] arrayCopy(double[][] arrayIn) {
-		double[][] temparr = new double[arrayIn.length][arrayIn[0].length];
-		for (int i = 0; i < arrayIn.length; i++) {
-			for (int j = 0; j < arrayIn[0].length; j++) {
-				temparr[i][j] = arrayIn[i][j];
-			}
-		}
-		return temparr;
-	}
-	
 	
 
 	public int[] highestEdge(double[][] adjacency) {
@@ -160,6 +147,7 @@ public Graph() {
 		return locs;
 	}
 	
+	
 	/*
 	 * Do the thing where we have a second Greedy algorithm that Skips the top (numToIgnore) edges for the first two members of a group
 	 */
@@ -172,24 +160,44 @@ public Graph() {
 		int[] locs = new int[2];
 		double currHigh = -1;
 		int numIgnored = 0;
+		double[] valsIgnored = new double[numToIgnore + 1];
+		int[][] locsIgnored = new int[numToIgnore + 1][2];
+		double minVal = 0;
+		int minloc = 0;
 		
+		//Loop through every edge possible
 		for(int i = 0; i < adjacency.length; i ++) {
-			for (int j = 0; j < adjacency[0].length; j++) {
+			numIgnored = 0;
+			for (int j = 0; j < adjacency[0].length - i; j++) { 
 				if (adjacency[i][j] > currHigh && i != j) { //Loop through, finding and updating highest edge
-					if(numIgnored < numToIgnore) {
-						
+					if(numIgnored < numToIgnore + 1) { //If we haven't ignored enough edges yet, add the current edge to the ignored list
+						valsIgnored[numIgnored] = adjacency[i][j];
+						locsIgnored[numIgnored][0] = i;
+						locsIgnored[numIgnored][1] = j;
+						numIgnored = numIgnored + 1;
+						if(numIgnored == numToIgnore + 1) {
+							minVal = helper.getMinVal(valsIgnored);
+						}
 					}
 					else {
-						currHigh = adjacency[i][j];
-						locs[0] = i;
-						locs[1] = j;
+						if (adjacency[i][j] > minVal) {
+							minloc = helper.getMinLoc(valsIgnored, minVal);
+							
+							valsIgnored[minloc] = adjacency[i][j];
+							locsIgnored[minloc][0] = i;
+							locsIgnored[minloc][1] = j;
+							minVal = helper.getMinVal(valsIgnored);
+						}
 					}
 				}
 			}
 		}
 		
-		return locs;
+		return locsIgnored[minloc];
 	}
+	
+	
+
 	
 	public int highestNode(double[][] adjacency, double[] neighbors) {
 		/**
@@ -204,7 +212,8 @@ public Graph() {
 		for (int x = 0; x < adjacency.length; x++) { //loop through other members to see how good they fit
 			tempVal = 1.0;
 			for (int j = 0; j < neighbors.length; j++) { //check how they fit with each other groupmember
-				if (!searchArray(neighbors, x) && adjacency[x][(int) neighbors[j]] >= 0) {//j isn't in neighbors{
+				//  Make sure that x isn't a neighbor; make sure there is a neighbor in the slot being looked at; make sure there is a valid connection
+				if (!searchArray(neighbors, x) && neighbors[j] != -1 && adjacency[x][(int) neighbors[j]] >= 0) {//j isn't in neighbors{
 					tempVal = tempVal * adjacency[x][(int) neighbors[j]];
 				}
 				else {
