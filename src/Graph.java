@@ -1,17 +1,16 @@
 import java.util.Arrays;
+import java.util.HashSet;
 
 public class Graph {
 	private Helper helper;
 	private int cliqueSize;
 	private int numTeams;
 	private double[][] adjacency;
-	
-	private int numNodes;
+	private HashSet<Integer> visitedNodes;
+	private HashSet<Integer> coloredClique;
 
 public Graph() {
 		final int numNodes = 24;
-		final int minAttribute = 0;
-		final int maxAttribute = 1;
 		final int maxSilverBullets = 2;
 		final double skillsWeight = 0.2; // Average dot product looks to be ~1.3
 		final double preferenceWeight = 0.5;
@@ -28,7 +27,28 @@ public Graph() {
 		adjacency = helper.normalize(adjacency);
 		
 //		helper.arrayPrintDouble2D(adjacency);
-		helper.arrayPrintDouble2D(greedyCliques());
+//		helper.arrayPrintInt2D(greedyCliques());
+		
+		visitedNodes = new HashSet<Integer>();
+		for (int i=0; i<numNodes; i++) {
+			if (!visitedNodes.contains(i)) {
+				coloredClique = getNodeColoredClique(i, new HashSet<Integer>(), 0.8);
+				helper.hashSetPrintInt(coloredClique);
+				visitedNodes.addAll(coloredClique);
+			}
+		}
+	}
+
+	public HashSet<Integer> getNodeColoredClique(int node, HashSet<Integer> connected, double minWeight) {
+		connected.add(node);
+		
+		for (int i=0; i<adjacency[node].length; i++) {
+			if (!connected.contains(i) && adjacency[node][i] > minWeight) {
+				getNodeColoredClique(i, connected, minWeight);
+			}
+		}
+		
+		return connected;
 	}
 
 	//Returns a matrix with rows showing different teams with the first column being a score out of 100

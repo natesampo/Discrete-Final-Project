@@ -102,6 +102,14 @@ public class Helper {
 			System.out.println("");
 		}
 	}
+	
+	public void hashSetPrintInt(HashSet<Integer> hashset) {
+		// Iterate over every value and print it
+		for (int i : hashset) {
+			System.out.print(i + " ");
+		}
+		System.out.println("");
+	}
 
 	public class Profile {
 		public int id;
