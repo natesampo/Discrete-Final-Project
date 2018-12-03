@@ -27,6 +27,8 @@ public Graph() {
 		adjacency = helper.normalize(adjacency);
 		
 		helper.arrayPrintDouble2D(greedyCliques());
+		System.out.println("\n\n");
+		helper.arrayPrintDouble2D(greedyV2(0));
 		
 //		visitedNodes = new HashSet<Integer>();
 //		for (int i=0; i<numNodes; i++) {
@@ -60,10 +62,8 @@ public Graph() {
 	//Returns a matrix with rows showing different teams with the first column being a score out of 100
 	public double[][] greedyCliques(){		
 		double[][] editableAdjacency = helper.arrayCopy(adjacency);
-//		System.arraycopy(adjacency, 0, editableAdjacency, 0, adjacency.length);
 		int[] newAdditions = new int[2];
 		int newNeighbor;
-
 		double[][] finalTeams = new double[numTeams][cliqueSize+1]; //+1 to indicate how strong the connections are.
 		
 		for (int teamNum = 0; teamNum < numTeams; teamNum++) {
@@ -79,7 +79,6 @@ public Graph() {
 					finalTeams[teamNum][memNum] = newNeighbor;
 				}
 			}
-			//TODO: Also calculate total team score here
 			for (int rowCol = 0; rowCol < adjacency.length; rowCol++) {
 				for (int currMem = 0; currMem < cliqueSize; currMem++) { //Edit the editableadjacency to make sure we don't select 
 					if(finalTeams[teamNum][currMem] >= 0) {
@@ -90,10 +89,19 @@ public Graph() {
 			}
 		}
 		
+		return getScores(finalTeams, -1);
+	}
+	
+	public double[][] getScores(double[][] finalTeams, int numSkipped) {
+		//Calculate scores 
+		//Edits the final teams input into the scores
+		//Uses the graph's innate adjacency matrix.
 		double tempScore;
 		int col;
 		int row;
 		boolean badTeamingExperience;
+		boolean printFailure = false;
+		int numDeep = 5;
 		for (int teamNum = 0; teamNum < numTeams; teamNum++) {
 			tempScore = 1.0; 
 			badTeamingExperience = false;
@@ -116,14 +124,57 @@ public Graph() {
 			}
 			if(badTeamingExperience) {
 				finalTeams[teamNum][cliqueSize] = -1;
+				if (numSkipped < numDeep && numSkipped >= 0) {//Arbitrary cutoff for how deep 
+					return greedyV2(numSkipped + 1);
+				}
+				else {
+					printFailure = true;
+				}
 			}
 			else {
 				finalTeams[teamNum][cliqueSize] = tempScore;
 			}
 		}
+		if(printFailure && numSkipped >= 0) {
+			String output = String.format("We went %d deep but still failed.", numDeep);
+			System.out.println(output);
+		}
 		return finalTeams;
 	}
 	
+
+	public double[][] greedyV2(int numToSkip){
+		double[][] editableAdjacency = helper.arrayCopy(adjacency);
+		int[] newAdditions = new int[2];
+		int newNeighbor;
+		double[][] finalTeams = new double[numTeams][cliqueSize+1]; //+1 to indicate how strong the connections are.
+		
+		for (int teamNum = 0; teamNum < numTeams; teamNum++) {
+			for (int memNum = 0; memNum < cliqueSize; memNum++) {
+				if(memNum == 0) { //If we need to find the highest edge (starting a new team)
+					newAdditions = highestEdgeV2(editableAdjacency, numToSkip);
+					finalTeams[teamNum][0] = newAdditions[0];
+					finalTeams[teamNum][1] = newAdditions[1];
+					memNum++;
+				}
+				else { //If we want to find the node that best fits with our current nodes
+					newNeighbor = highestNode(editableAdjacency, Arrays.copyOfRange(finalTeams[teamNum], 0, memNum));
+					finalTeams[teamNum][memNum] = newNeighbor;
+				}
+			}
+			for (int rowCol = 0; rowCol < adjacency.length; rowCol++) {
+				for (int currMem = 0; currMem < cliqueSize; currMem++) { //Edit the editableadjacency to make sure we don't select 
+					if(finalTeams[teamNum][currMem] >= 0) {
+						editableAdjacency[(int) finalTeams[teamNum][currMem]][rowCol] = -1;
+						editableAdjacency[rowCol][(int) finalTeams[teamNum][currMem]] = -1;
+					}
+				}
+			}
+		}
+		
+		return getScores(finalTeams, numToSkip);
+		
+	}
 
 	public int[] highestEdge(double[][] adjacency) {
 		/**
@@ -168,7 +219,7 @@ public Graph() {
 		//Loop through every edge possible
 		for(int i = 0; i < adjacency.length; i ++) {
 			numIgnored = 0;
-			for (int j = 0; j < adjacency[0].length - i; j++) { 
+			for (int j = 0; j < adjacency[0].length; j++) { 
 				if (adjacency[i][j] > currHigh && i != j) { //Loop through, finding and updating highest edge
 					if(numIgnored < numToIgnore + 1) { //If we haven't ignored enough edges yet, add the current edge to the ignored list
 						valsIgnored[numIgnored] = adjacency[i][j];
@@ -195,8 +246,6 @@ public Graph() {
 		
 		return locsIgnored[minloc];
 	}
-	
-	
 
 	
 	public int highestNode(double[][] adjacency, double[] neighbors) {
@@ -213,7 +262,7 @@ public Graph() {
 			tempVal = 1.0;
 			for (int j = 0; j < neighbors.length; j++) { //check how they fit with each other groupmember
 				//  Make sure that x isn't a neighbor; make sure there is a neighbor in the slot being looked at; make sure there is a valid connection
-				if (!searchArray(neighbors, x) && neighbors[j] != -1 && adjacency[x][(int) neighbors[j]] >= 0) {//j isn't in neighbors{
+				if (!helper.searchArray(neighbors, x) && neighbors[j] != -1 && adjacency[x][(int) neighbors[j]] >= 0) {//j isn't in neighbors{
 					tempVal = tempVal * adjacency[x][(int) neighbors[j]];
 				}
 				else {
@@ -231,18 +280,6 @@ public Graph() {
 	
 	}
 	
-	public boolean searchArray(double[] list, int val) {
-		/*
-		 * Searches an array for a value, because array.contains wasn't liking me.
-		 */
-		for (int x = 0; x < list.length; x++) {
-			if (list[x] == val) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 
 	public double[][] generateAdjacency(Helper.Profile[] profiles, double skillsWeight, double preferenceWeight) {
 		double[][] adjacencyArray = new double[profiles.length][profiles.length];

@@ -146,6 +146,18 @@ public class Helper {
 		}
 		System.out.println("");
 	}
+	
+	public boolean searchArray(double[] list, int val) {
+		/*
+		 * Searches an array for a value, because array.contains wasn't liking me.
+		 */
+		for (int x = 0; x < list.length; x++) {
+			if (list[x] == val) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	public class Profile {
 		public int id;
