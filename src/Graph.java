@@ -29,10 +29,19 @@ public Graph() {
 //		helper.arrayPrintDouble2D(adjacency);
 //		helper.arrayPrintInt2D(greedyCliques());
 		
+		getColoredCliques();
+	}
+
+	// Start of recursive colored clique finding
+	public void getColoredCliques() {
+		
+		
+		// O(n^2) time complexity
+		final double minWeight = 0.98;
 		visitedNodes = new HashSet<Integer>();
-		for (int i=0; i<numNodes; i++) {
+		for (int i=0; i<adjacency.length; i++) {
 			if (!visitedNodes.contains(i)) {
-				coloredClique = getNodeColoredClique(i, new HashSet<Integer>(), 0.95);
+				coloredClique = getNodeColoredClique(i, new HashSet<Integer>(), minWeight);
 				helper.hashSetPrintInt(coloredClique);
 				visitedNodes.addAll(coloredClique);
 			}
