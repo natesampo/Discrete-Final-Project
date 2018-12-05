@@ -147,6 +147,7 @@ public class Helper {
 		System.out.println("");
 	}
 	
+	
 	public boolean searchArray(double[] list, int val) {
 		/*
 		 * Searches an array for a value, because array.contains wasn't liking me.
