@@ -33,6 +33,42 @@ public class Helper {
 		return array;
 	}
 	
+	public double[][] arrayCopy(double[][] arrayIn) {
+		//Copies an array because Java's functions weren't working well.
+		double[][] temparr = new double[arrayIn.length][arrayIn[0].length];
+		for (int i = 0; i < arrayIn.length; i++) {
+			for (int j = 0; j < arrayIn[0].length; j++) {
+				temparr[i][j] = arrayIn[i][j];
+			}
+		}
+		return temparr;
+	}
+	
+	public double getMinVal(double[] vals) {
+		//Get the min value in an array of doubles.
+		//It should never be higher than 1
+		double tempVal = 1;
+		for (int x = 0; x < vals.length; x ++) {
+			if (vals[x] <= tempVal) {
+				tempVal = vals[x];
+			}
+		}
+		return tempVal;
+	}
+	
+	public int getMinLoc(double[] vals, double val) {
+		//Get the location of the minimum value in a double array
+		int loc = -1;
+		for (int x = 0; x < vals.length; x++) {
+			if (vals[x] == val) {
+				loc = x;
+				break;
+			}
+		}
+		return loc;
+	}
+	
+	
 	public Profile[] generateProfiles(int nodes, int numSkills, int maxSilverBullets) {
 		/*
 		 * 5 Skills Total
@@ -109,6 +145,18 @@ public class Helper {
 			System.out.print(i + " ");
 		}
 		System.out.println("");
+	}
+	
+	public boolean searchArray(double[] list, int val) {
+		/*
+		 * Searches an array for a value, because array.contains wasn't liking me.
+		 */
+		for (int x = 0; x < list.length; x++) {
+			if (list[x] == val) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public class Profile {
