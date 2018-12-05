@@ -9,7 +9,7 @@ public class Graph {
 	private HashSet<Integer> visitedNodes;
 	private HashSet<Integer> coloredClique;
 
-public Graph() {
+	public Graph() {
 		final int numNodes = 24;
 		final int maxSilverBullets = 2;
 		final double skillsWeight = 0.2; // Average dot product looks to be ~1.3
