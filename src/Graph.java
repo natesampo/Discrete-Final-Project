@@ -30,7 +30,7 @@ public Graph() {
 		System.out.println("\n\n");
 		helper.arrayPrintDouble2D(greedyV2(0));
 		System.out.println("\n\n");
-		helper.arrayPrintDouble2D(allCliques());
+//		helper.arrayPrintDouble2D(allCliques());
 		
 //		visitedNodes = new HashSet<Integer>();
 //		for (int i=0; i<numNodes; i++) {
