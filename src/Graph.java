@@ -29,6 +29,8 @@ public Graph() {
 		helper.arrayPrintDouble2D(greedyCliques());
 		System.out.println("\n\n");
 		helper.arrayPrintDouble2D(greedyV2(0));
+		System.out.println("\n\n");
+		helper.arrayPrintDouble2D(allCliques());
 		
 //		visitedNodes = new HashSet<Integer>();
 //		for (int i=0; i<numNodes; i++) {
@@ -102,7 +104,7 @@ public Graph() {
 		boolean badTeamingExperience;
 		boolean printFailure = false;
 		int numDeep = 5;
-		for (int teamNum = 0; teamNum < numTeams; teamNum++) {
+		for (int teamNum = 0; teamNum < finalTeams.length; teamNum++) {
 			tempScore = 1.0; 
 			badTeamingExperience = false;
 			for (int memNum = 0; memNum < cliqueSize; memNum++) {
@@ -173,7 +175,44 @@ public Graph() {
 		}
 		
 		return getScores(finalTeams, numToSkip);
+	}
+	
+	public double[][] allCliques(){
+		int numPeeps = adjacency.length;
+		int numPossTeams = 10626; //24 People
+//		int numPossTeams = 91390; //40 people
+//		int numPossTeams = 1581580; //80 people
 		
+		double[][] tempTeams = new double[numPossTeams][4+1]; //This ONLY does clique sizes of 4. Because magnitude.
+		int currTeam = 0;
+		
+		//numPeeps - 3 because there are 3 other members
+		for (int firstMem = 0; firstMem < numPeeps - 3; firstMem++) {
+			for (int secondMem = firstMem + 1; secondMem < numPeeps - 2; secondMem++) {
+				if(adjacency[firstMem][secondMem] > 0) {
+					for (int thirdMem = secondMem + 1; thirdMem < numPeeps - 1; thirdMem++) {
+						if(adjacency[firstMem][thirdMem] > 0 && adjacency[secondMem][thirdMem] > 0) {
+							for (int fourthMem = thirdMem + 1; fourthMem < numPeeps; fourthMem++) {
+								if(adjacency[firstMem][fourthMem] > 0 && adjacency[secondMem][fourthMem] > 0 && adjacency[thirdMem][fourthMem] > 0 && currTeam < numPossTeams) {
+									tempTeams[currTeam][0] = firstMem;
+									tempTeams[currTeam][1] = secondMem;
+									tempTeams[currTeam][2] = thirdMem;
+									tempTeams[currTeam][3] = fourthMem;
+									currTeam++;
+								}
+								else if (currTeam >= numPossTeams) {
+									System.out.println("Wat");
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		tempTeams = getScores(tempTeams, 0);
+		
+		return tempTeams;
 	}
 
 	public int[] highestEdge(double[][] adjacency) {
