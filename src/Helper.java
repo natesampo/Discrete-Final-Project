@@ -5,6 +5,7 @@ public class Helper {
 
 	public double[][] normalize(double[][] array) {
 		// This is O(n^2). Little yikes but whatever
+		// Normalize from minimum value (not including silver bullets which remain at 0) to maximum value
 		double max = 0.0;
 		double min = 100.0;
 		
@@ -14,7 +15,7 @@ public class Helper {
 					max = array[i][j];
 				}
 				
-				if(array[i][j] < min) {
+				if(array[i][j] != 0.0 && array[i][j] < min) {
 					min = array[i][j];
 				}
 			}
@@ -24,12 +25,49 @@ public class Helper {
 		
 		for(int i=0; i<array.length; i++) {
 			for(int j=0; j<array[i].length; j++) {
-				array[i][j] = (array[i][j]-min)/max;
+				// The lowest value should be 0, along with the silver bullets. Math.max is because silver bullets would go below 0 when subtracting min.
+				array[i][j] = Math.max((array[i][j]-min)/max, 0.0);
 			}
 		}
 		
 		return array;
 	}
+	
+	public double[][] arrayCopy(double[][] arrayIn) {
+		//Copies an array because Java's functions weren't working well.
+		double[][] temparr = new double[arrayIn.length][arrayIn[0].length];
+		for (int i = 0; i < arrayIn.length; i++) {
+			for (int j = 0; j < arrayIn[0].length; j++) {
+				temparr[i][j] = arrayIn[i][j];
+			}
+		}
+		return temparr;
+	}
+	
+	public double getMinVal(double[] vals) {
+		//Get the min value in an array of doubles.
+		//It should never be higher than 1
+		double tempVal = 1;
+		for (int x = 0; x < vals.length; x ++) {
+			if (vals[x] <= tempVal) {
+				tempVal = vals[x];
+			}
+		}
+		return tempVal;
+	}
+	
+	public int getMinLoc(double[] vals, double val) {
+		//Get the location of the minimum value in a double array
+		int loc = -1;
+		for (int x = 0; x < vals.length; x++) {
+			if (vals[x] == val) {
+				loc = x;
+				break;
+			}
+		}
+		return loc;
+	}
+	
 	
 	public Profile[] generateProfiles(int nodes, int numSkills, int maxSilverBullets) {
 		/*
@@ -99,6 +137,26 @@ public class Helper {
 			}
 			System.out.println("");
 		}
+	}
+	
+	public void hashSetPrintInt(HashSet<Integer> hashset) {
+		// Iterate over every value and print it
+		for (int i : hashset) {
+			System.out.print(i + " ");
+		}
+		System.out.println("");
+	}
+	
+	public boolean searchArray(double[] list, int val) {
+		/*
+		 * Searches an array for a value, because array.contains wasn't liking me.
+		 */
+		for (int x = 0; x < list.length; x++) {
+			if (list[x] == val) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public class Profile {
