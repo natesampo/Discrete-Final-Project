@@ -25,12 +25,16 @@ public class Graph {
 		
 		adjacency = generateAdjacency(profiles, skillsWeight, preferenceWeight);
 		adjacency = helper.normalize(adjacency);
+
+		ResultScorer scorer = new ResultScorer();
 		
 		Team[] teamsFromGreedy1 = greedyCliques();
+		scorer.scoreTeams(teamsFromGreedy1, profiles);
 		System.out.println("Result of first greedy implementation:");
 		ObjectPrinter.printTeamArray(teamsFromGreedy1);
 		System.out.println("\n\n");
 		Team[] teamsFromGreedy2 = greedyV2(0);
+		scorer.scoreTeams(teamsFromGreedy2, profiles);
 		System.out.println("Result of second greedy implementation:");
 		ObjectPrinter.printTeamArray(teamsFromGreedy2);
 		System.out.println("\n\n");

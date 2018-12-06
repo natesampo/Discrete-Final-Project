@@ -1,4 +1,4 @@
-import java.util.stream.IntStream;
+import java.util.stream.DoubleStream;
 
 public class ResultScorer {
 
@@ -23,16 +23,19 @@ public class ResultScorer {
         int numMembers = team.memberIds.length;
 
         // Tally up the total "points" for each skill across all members
-        score.pointsBySkillSum = new int[numSkills];
+        score.pointsBySkillSum = new double[numSkills];
 
         // Keep track of the min and max ratings for each skill
-        score.pointsBySkillMin = new int[numSkills];
-        score.pointsBySkillMax = new int[numSkills];
+        score.pointsBySkillMin = new double[numSkills];
+        score.pointsBySkillMax = new double[numSkills];
 
 
         for (int memberId : team.memberIds) {
+            if (memberId == -1)
+                continue;
+
             PersonProfile profile = profiles[memberId];
-            int[] skills = profile.skills;
+            double[] skills = profile.skills;
             score.pointsBySkillSum = Helper.sumArrays(score.pointsBySkillSum, skills);
             score.pointsBySkillMin = Helper.arrayElementWiseMin(score.pointsBySkillMin, skills);
             score.pointsBySkillMax = Helper.arrayElementWiseMax(score.pointsBySkillMax, skills);
@@ -45,11 +48,12 @@ public class ResultScorer {
         }
 
         // Determine the total number of skill "points" possessed by this team
-        score.skillPointTotal = IntStream.of(score.pointsBySkillSum).sum();
+        score.skillPointTotal = DoubleStream.of(score.pointsBySkillSum).sum();
 
         // Determine the average skill rating for all members across all skills
         score.meanSkillRating = (double)score.skillPointTotal / (numMembers * numSkills);
 
+        team.score = score;
         return score;
     }
 
@@ -65,14 +69,14 @@ public class ResultScorer {
     public class TeamScore {
 
         // The total number of "points" for all skills across all members.
-        public int skillPointTotal;
+        public double skillPointTotal;
 
         // For each skill, the min, max, mean, and sum of the ratings of the members.
         // The lengths of these arrays are the number of skills being tracked.
-        public int[] pointsBySkillMin;
-        public int[] pointsBySkillMax;
+        public double[] pointsBySkillMin;
+        public double[] pointsBySkillMax;
         public double[] pointsBySkillMean;
-        public int[] pointsBySkillSum;
+        public double[] pointsBySkillSum;
 
         // The average (mean) rating across all skills and across all team members
         public double meanSkillRating;

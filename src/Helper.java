@@ -130,11 +130,11 @@ public class Helper {
 		return res;
 	}
 
-	public static int[] sumArrays(int[] a1, int[] a2) {
+	public static double[] sumArrays(double[] a1, double[] a2) {
 		if (a1.length != a2.length)
 			throw new IllegalArgumentException("Length of arrays to add must be equal.");
 
-		int[] res = new int[a1.length];
+		double[] res = new double[a1.length];
 		for (int i = 0; i < a1.length; ++i) {
 			res[i] = a1[i] + a2[i];
 		}
@@ -142,11 +142,11 @@ public class Helper {
 		return res;
 	}
 
-	public static int[] arrayElementWiseMin(int[] a1, int[] a2) {
+	public static double[] arrayElementWiseMin(double[] a1, double[] a2) {
 		if (a1.length != a2.length)
 			throw new IllegalArgumentException("Lengths of arrays to perform element-wise min on must be equal.");
 
-		int[] res = new int[a1.length];
+		double[] res = new double[a1.length];
 
 		for (int i = 0; i < a1.length; ++i)
 			res[i] = Math.min(a1[i], a2[i]);
@@ -154,11 +154,11 @@ public class Helper {
 		return res;
 	}
 
-	public static int[] arrayElementWiseMax(int[] a1, int[] a2) {
+	public static double[] arrayElementWiseMax(double[] a1, double[] a2) {
 		if (a1.length != a2.length)
 			throw new IllegalArgumentException("Lengths of arrays to perform element-wise max on must be equal.");
 
-		int[] res = new int[a1.length];
+		double[] res = new double[a1.length];
 
 		for (int i = 0; i < a1.length; ++i)
 			res[i] = Math.max(a1[i], a2[i]);
