@@ -2,7 +2,7 @@ import java.util.stream.IntStream;
 
 public class ResultScorer {
 
-    public static TeamSetScore scoreTeams(Team[] teams, PersonProfile[] profiles) {
+    public TeamSetScore scoreTeams(Team[] teams, PersonProfile[] profiles) {
         TeamSetScore score = new TeamSetScore(teams.length);
         for (int i = 0; i < teams.length; ++i) {
             Team team = teams[i];
@@ -12,7 +12,7 @@ public class ResultScorer {
         return score;
     }
 
-    public static TeamScore scoreTeam(Team team, PersonProfile[] profiles) {
+    public TeamScore scoreTeam(Team team, PersonProfile[] profiles) {
         if (team.memberIds.length < 1) {
             throw new IllegalArgumentException("A team must consist of at least 1 member.");
         }
@@ -53,7 +53,7 @@ public class ResultScorer {
         return score;
     }
 
-    public static class TeamSetScore {
+    public class TeamSetScore {
         public TeamScore[] teamScores;
         // TODO: Implement overall stats
 
@@ -62,7 +62,7 @@ public class ResultScorer {
         }
     }
 
-    public static class TeamScore {
+    public class TeamScore {
 
         // The total number of "points" for all skills across all members.
         public int skillPointTotal;

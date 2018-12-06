@@ -111,6 +111,17 @@ public class Helper {
 	/**
 	 * Calculates the dot product of two vectors.
 	 */
+	public double dotProduct(int[] v1, int[] v2) {
+		double res = 0.0;
+		for (int i = 0; i < v1.length; ++i) {
+			res += v1[i] * v2[i];
+		}
+		return res;
+	}
+
+	/**
+	 * Calculates the dot product of two vectors.
+	 */
 	public double dotProduct(double[] v1, double[] v2) {
 		double res = 0.0;
 		for (int i = 0; i < v1.length; ++i) {
