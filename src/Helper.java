@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -95,7 +96,7 @@ public class Helper {
 		int skillsMin = 0;
 		int skillsMax = 1;
 		for (int skillIdx = 0; skillIdx < numSkills; ++skillIdx) {
-			prof.skills[skillIdx] = (ThreadLocalRandom.current().nextInt(skillsMin*100, skillsMax*100 + 1))/100;
+			prof.skills[skillIdx] = ((double) ThreadLocalRandom.current().nextInt(skillsMin*100, skillsMax*100 + 1))/100;
 		}
 
 		// Pick some silver bullets
@@ -200,6 +201,12 @@ public class Helper {
 			System.out.print(i + " ");
 		}
 		System.out.println("");
+	}
+	
+	public void hashSetArrayPrintInt(ArrayList<HashSet<Integer>> array) {
+		for (HashSet<Integer> element : array) {
+			hashSetPrintInt(element);
+		}
 	}
 	
 	

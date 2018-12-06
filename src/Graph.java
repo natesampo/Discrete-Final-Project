@@ -1,16 +1,20 @@
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Graph {
 	private Helper helper;
 	private int cliqueSize;
 	private int numTeams;
+	private int numNodes;
 	private double[][] adjacency;
 	private HashSet<Integer> visitedNodes;
 	private HashSet<Integer> coloredClique;
+	private ArrayList<HashSet<Integer>> coloredCliques;
 
 	public Graph() {
-		final int numNodes = 24;
+		numNodes = 100;
 		final int maxSilverBullets = 2;
 		final double skillsWeight = 0.2; // Average dot product looks to be ~1.3
 		final double preferenceWeight = 0.5;
@@ -28,6 +32,7 @@ public class Graph {
 
 		ResultScorer scorer = new ResultScorer();
 		
+/*
 		Team[] teamsFromGreedy1 = greedyCliques();
 		scorer.scoreTeams(teamsFromGreedy1, profiles);
 		System.out.println("Result of first greedy implementation:");
@@ -37,7 +42,7 @@ public class Graph {
 		scorer.scoreTeams(teamsFromGreedy2, profiles);
 		System.out.println("Result of second greedy implementation:");
 		ObjectPrinter.printTeamArray(teamsFromGreedy2);
-		System.out.println("\n\n");
+		System.out.println("\n\n");*/
 //		helper.arrayPrintDouble2D(allCliques());
 		
 		//getColoredCliques();
@@ -46,18 +51,20 @@ public class Graph {
 	// Start of recursive colored clique finding
 	public void getColoredCliques() {
 		
-		
 		// O(n^2) time complexity
-//		final double minWeight = 0.98;
+		final double minWeight = 0.99;
 
-//		visitedNodes = new HashSet<Integer>();
-//		for (int i=0; i<numNodes; i++) {
-//			if (!visitedNodes.contains(i)) {
-//				coloredClique = getNodeColoredClique(i, new HashSet<Integer>(), 0.95);
-//				helper.hashSetPrintInt(coloredClique);
-//				visitedNodes.addAll(coloredClique);
-//			}
-//		}
+		visitedNodes = new HashSet<Integer>();
+		for (int i=0; i<numNodes; i++) {
+			if (!visitedNodes.contains(i)) {
+				coloredClique = getNodeColoredClique(i, new HashSet<Integer>(), minWeight);
+				if (coloredClique.size() > 1) {
+					coloredCliques.add(coloredClique);
+					visitedNodes.addAll(coloredClique);
+					helper.hashSetArrayPrintInt(coloredCliques);
+				}
+			}
+		}
 	}
 
 	// Recursive strategy of finding cliques by traveling along edges that are above minWeight
@@ -361,11 +368,11 @@ public class Graph {
 	 * @return the weight of the edge from p1 to p2, where a lower score is more desirable
 	 */
 	 public double calculateEdgeWeight(PersonProfile p1, PersonProfile p2, double skillsWeight, double preferenceWeight) {
-		 // Silver bullet makes weight 0. 
-		return (((p1.silverBullets.contains(p2.id) || p2.silverBullets.contains(p1.id))) ? 0 : skillsWeight * (1-(helper.dotProduct(p1.skills, p2.skills)/p1.skills.length)) + preferenceWeight * (p1.preferredPartners.contains(p2.id) ? 1 : 0));
+		 // Silver bullet makes weight 0.
+		 return (((p1.silverBullets.contains(p2.id) || p2.silverBullets.contains(p1.id))) ? 0 : skillsWeight * (1-(helper.dotProduct(p1.skills, p2.skills)/p1.skills.length)) + preferenceWeight * (p1.preferredPartners.contains(p2.id) ? 1 : 0));
 	}
 	
 	public static void main(String args[]) {
-		new Graph();	
+		new Graph();
 	}
 }
