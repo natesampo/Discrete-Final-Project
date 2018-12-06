@@ -70,7 +70,7 @@ public class Helper {
 	}
 	
 	
-	public PersonProfile[] generateProfiles(int nodes, int numSkills, int maxSilverBullets) {
+	public PersonProfile[] generateProfiles(int nodes, int numSkills, int maxSilverBullets, int maxPreferredPartners) {
 		/*
 		 * 5 Skills Total
 		 * 
@@ -83,13 +83,13 @@ public class Helper {
 		PersonProfile[] profiles = new PersonProfile[nodes];
 		
 		for(int i=0; i<nodes; i++) {
-			profiles[i] = generateRandomProfile(i, numSkills, maxSilverBullets, nodes);
+			profiles[i] = generateRandomProfile(i, numSkills, maxSilverBullets, maxPreferredPartners, nodes);
 		}
 		
 		return profiles;
 	}
 
-	private PersonProfile generateRandomProfile(int id, int numSkills, int maxSilverBullets, int totalNumPeople) {
+	private PersonProfile generateRandomProfile(int id, int numSkills, int maxSilverBullets, int maxPreferredPartners, int totalNumPeople) {
 		PersonProfile prof = new PersonProfile(id, numSkills);
 
 		// Generate some random skill levels
@@ -104,6 +104,13 @@ public class Helper {
 		for (int i = 0; i < numSilverBullets; ++i) {
 			int silverBulletedPersonId = ThreadLocalRandom.current().nextInt(0, totalNumPeople);
 			prof.silverBullets.add(silverBulletedPersonId);
+		}
+		
+		// Pick some silver bullets
+		int numPreferredPartners = ThreadLocalRandom.current().nextInt(0, maxPreferredPartners+1);
+		for (int i = 0; i < numPreferredPartners; ++i) {
+			int preferredPartnerPersonId = ThreadLocalRandom.current().nextInt(0, totalNumPeople);
+			prof.preferredPartners.add(preferredPartnerPersonId);
 		}
 
 		return prof;

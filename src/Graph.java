@@ -16,6 +16,7 @@ public class Graph {
 	public Graph() {
 		numNodes = 100;
 		final int maxSilverBullets = 2;
+		final int maxPreferredPartners = 6;
 		final double skillsWeight = 0.2; // Average dot product looks to be ~1.3
 		final double preferenceWeight = 0.5;
 		final int numSkills = 5;
@@ -25,7 +26,7 @@ public class Graph {
 		helper = new Helper();
 		numTeams = (int) java.lang.Math.ceil((numNodes / cliqueSize));
 
-		final PersonProfile[] profiles = helper.generateProfiles(numNodes, numSkills, maxSilverBullets);
+		final PersonProfile[] profiles = helper.generateProfiles(numNodes, numSkills, maxSilverBullets, maxPreferredPartners);
 		
 		adjacency = generateAdjacency(profiles, skillsWeight, preferenceWeight);
 		adjacency = helper.normalize(adjacency);
