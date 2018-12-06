@@ -69,7 +69,7 @@ public class Helper {
 	}
 	
 	
-	public Profile[] generateProfiles(int nodes, int numSkills, int maxSilverBullets) {
+	public PersonProfile[] generateProfiles(int nodes, int numSkills, int maxSilverBullets) {
 		/*
 		 * 5 Skills Total
 		 * 
@@ -79,7 +79,7 @@ public class Helper {
 		 * 3. Software
 		 * 4. Design
 		 */
-		Profile[] profiles = new Profile[nodes];
+		PersonProfile[] profiles = new PersonProfile[nodes];
 		
 		for(int i=0; i<nodes; i++) {
 			profiles[i] = generateRandomProfile(i, numSkills, maxSilverBullets, nodes);
@@ -88,14 +88,14 @@ public class Helper {
 		return profiles;
 	}
 
-	private Profile generateRandomProfile(int id, int numSkills, int maxSilverBullets, int totalNumPeople) {
-		Profile prof = new Profile(id, numSkills);
+	private PersonProfile generateRandomProfile(int id, int numSkills, int maxSilverBullets, int totalNumPeople) {
+		PersonProfile prof = new PersonProfile(id, numSkills);
 
 		// Generate some random skill levels
 		int skillsMin = 0;
 		int skillsMax = 1;
 		for (int skillIdx = 0; skillIdx < numSkills; ++skillIdx) {
-			prof.skills[skillIdx] = ((double) ThreadLocalRandom.current().nextInt(skillsMin*100, skillsMax*100 + 1))/100;
+			prof.skills[skillIdx] = (ThreadLocalRandom.current().nextInt(skillsMin*100, skillsMax*100 + 1))/100;
 		}
 
 		// Pick some silver bullets
@@ -115,6 +115,50 @@ public class Helper {
 		double res = 0.0;
 		for (int i = 0; i < v1.length; ++i) {
 			res += v1[i] * v2[i];
+		}
+		return res;
+	}
+
+	public static int[] sumArrays(int[] a1, int[] a2) {
+		if (a1.length != a2.length)
+			throw new IllegalArgumentException("Length of arrays to add must be equal.");
+
+		int[] res = new int[a1.length];
+		for (int i = 0; i < a1.length; ++i) {
+			res[i] = a1[i] + a2[i];
+		}
+
+		return res;
+	}
+
+	public static int[] arrayElementWiseMin(int[] a1, int[] a2) {
+		if (a1.length != a2.length)
+			throw new IllegalArgumentException("Lengths of arrays to perform element-wise min on must be equal.");
+
+		int[] res = new int[a1.length];
+
+		for (int i = 0; i < a1.length; ++i)
+			res[i] = Math.min(a1[i], a2[i]);
+
+		return res;
+	}
+
+	public static int[] arrayElementWiseMax(int[] a1, int[] a2) {
+		if (a1.length != a2.length)
+			throw new IllegalArgumentException("Lengths of arrays to perform element-wise max on must be equal.");
+
+		int[] res = new int[a1.length];
+
+		for (int i = 0; i < a1.length; ++i)
+			res[i] = Math.max(a1[i], a2[i]);
+
+		return res;
+	}
+
+	public Team[] generateTeamArray(int teamCount, int membersPerTeam) {
+		Team[] res = new Team[teamCount];
+		for (int i = 0; i < teamCount; ++i) {
+			res[i] = new Team(membersPerTeam);
 		}
 		return res;
 	}
@@ -148,7 +192,7 @@ public class Helper {
 	}
 	
 	
-	public boolean searchArray(double[] list, int val) {
+	public boolean searchArray(int[] list, int val) {
 		/*
 		 * Searches an array for a value, because array.contains wasn't liking me.
 		 */
@@ -160,17 +204,4 @@ public class Helper {
 		return false;
 	}
 
-	public class Profile {
-		public int id;
-		public double[] skills;
-		public HashSet<Integer> preferredPartners;
-		public HashSet<Integer> silverBullets;
-
-		public Profile(int id, int numSkills) {
-			this.id = id;
-			skills = new double[numSkills];
-			preferredPartners = new HashSet<>();
-			silverBullets = new HashSet<>();
-		}
-	}
 }

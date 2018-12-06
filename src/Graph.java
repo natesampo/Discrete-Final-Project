@@ -21,14 +21,18 @@ public class Graph {
 		helper = new Helper();
 		numTeams = (int) java.lang.Math.ceil((numNodes / cliqueSize));
 
-		final Helper.Profile[] profiles = helper.generateProfiles(numNodes, numSkills, maxSilverBullets);
+		final PersonProfile[] profiles = helper.generateProfiles(numNodes, numSkills, maxSilverBullets);
 		
 		adjacency = generateAdjacency(profiles, skillsWeight, preferenceWeight);
 		adjacency = helper.normalize(adjacency);
 		
-		helper.arrayPrintDouble2D(greedyCliques());
+		Team[] teamsFromGreedy1 = greedyCliques();
+		System.out.println("Result of first greedy implementation:");
+		ObjectPrinter.printTeamArray(teamsFromGreedy1);
 		System.out.println("\n\n");
-		helper.arrayPrintDouble2D(greedyV2(0));
+		Team[] teamsFromGreedy2 = greedyV2(0);
+		System.out.println("Result of second greedy implementation:");
+		ObjectPrinter.printTeamArray(teamsFromGreedy2);
 		System.out.println("\n\n");
 //		helper.arrayPrintDouble2D(allCliques());
 		
@@ -62,39 +66,39 @@ public class Graph {
 	}
 
 	//Returns a matrix with rows showing different teams with the first column being a score out of 100
-	public double[][] greedyCliques(){		
+	public Team[] greedyCliques(){
 		double[][] editableAdjacency = helper.arrayCopy(adjacency);
 		int[] newAdditions = new int[2];
 		int newNeighbor;
-		double[][] finalTeams = new double[numTeams][cliqueSize+1]; //+1 to indicate how strong the connections are.
+		Team[] proposedTeams = helper.generateTeamArray(numTeams, cliqueSize);
 		
 		for (int teamNum = 0; teamNum < numTeams; teamNum++) {
 			for (int memNum = 0; memNum < cliqueSize; memNum++) {
 				if(memNum == 0) { //If we need to find the highest edge (starting a new team)
 					newAdditions = highestEdge(editableAdjacency);
-					finalTeams[teamNum][0] = newAdditions[0];
-					finalTeams[teamNum][1] = newAdditions[1];
+					proposedTeams[teamNum].memberIds[0] = newAdditions[0];
+					proposedTeams[teamNum].memberIds[1] = newAdditions[1];
 					memNum++;
 				}
 				else { //If we want to find the node that best fits with our current nodes
-					newNeighbor = highestNode(editableAdjacency, Arrays.copyOfRange(finalTeams[teamNum], 0, memNum));
-					finalTeams[teamNum][memNum] = newNeighbor;
+					newNeighbor = highestNode(editableAdjacency, Arrays.copyOfRange(proposedTeams[teamNum].memberIds, 0, memNum));
+					proposedTeams[teamNum].memberIds[memNum] = newNeighbor;
 				}
 			}
 			for (int rowCol = 0; rowCol < adjacency.length; rowCol++) {
 				for (int currMem = 0; currMem < cliqueSize; currMem++) { //Edit the editableadjacency to make sure we don't select 
-					if(finalTeams[teamNum][currMem] >= 0) {
-						editableAdjacency[(int) finalTeams[teamNum][currMem]][rowCol] = -1;
-						editableAdjacency[rowCol][(int) finalTeams[teamNum][currMem]] = -1;
+					if (proposedTeams[teamNum].memberIds[currMem] >= 0) {
+						editableAdjacency[proposedTeams[teamNum].memberIds[currMem]][rowCol] = -1;
+						editableAdjacency[rowCol][proposedTeams[teamNum].memberIds[currMem]] = -1;
 					}
 				}
 			}
 		}
 		
-		return getScores(finalTeams, -1);
+		return proposedTeams;
 	}
 	
-	public double[][] getScores(double[][] finalTeams, int numSkipped) {
+	/*public double[][] getScores(double[][] finalTeams, int numSkipped) {
 		//Calculate scores 
 		//Edits the final teams input into the scores
 		//Uses the graph's innate adjacency matrix.
@@ -142,39 +146,39 @@ public class Graph {
 			System.out.println(output);
 		}
 		return finalTeams;
-	}
+	}*/
 	
 
-	public double[][] greedyV2(int numToSkip){
+	public Team[] greedyV2(int numToSkip){
 		double[][] editableAdjacency = helper.arrayCopy(adjacency);
 		int[] newAdditions = new int[2];
 		int newNeighbor;
-		double[][] finalTeams = new double[numTeams][cliqueSize+1]; //+1 to indicate how strong the connections are.
+		Team[] proposedTeams = helper.generateTeamArray(numTeams, cliqueSize);
 		
 		for (int teamNum = 0; teamNum < numTeams; teamNum++) {
 			for (int memNum = 0; memNum < cliqueSize; memNum++) {
 				if(memNum == 0) { //If we need to find the highest edge (starting a new team)
 					newAdditions = highestEdgeV2(editableAdjacency, numToSkip);
-					finalTeams[teamNum][0] = newAdditions[0];
-					finalTeams[teamNum][1] = newAdditions[1];
+					proposedTeams[teamNum].memberIds[1] = newAdditions[1];
+					proposedTeams[teamNum].memberIds[0] = newAdditions[0];
 					memNum++;
 				}
 				else { //If we want to find the node that best fits with our current nodes
-					newNeighbor = highestNode(editableAdjacency, Arrays.copyOfRange(finalTeams[teamNum], 0, memNum));
-					finalTeams[teamNum][memNum] = newNeighbor;
+					newNeighbor = highestNode(editableAdjacency, Arrays.copyOfRange(proposedTeams[teamNum].memberIds, 0, memNum));
+					proposedTeams[teamNum].memberIds[memNum] = newNeighbor;
 				}
 			}
 			for (int rowCol = 0; rowCol < adjacency.length; rowCol++) {
 				for (int currMem = 0; currMem < cliqueSize; currMem++) { //Edit the editableadjacency to make sure we don't select 
-					if(finalTeams[teamNum][currMem] >= 0) {
-						editableAdjacency[(int) finalTeams[teamNum][currMem]][rowCol] = -1;
-						editableAdjacency[rowCol][(int) finalTeams[teamNum][currMem]] = -1;
+					if(proposedTeams[teamNum].memberIds[currMem] >= 0) {
+						editableAdjacency[(int) proposedTeams[teamNum].memberIds[currMem]][rowCol] = -1;
+						editableAdjacency[rowCol][(int) proposedTeams[teamNum].memberIds[currMem]] = -1;
 					}
 				}
 			}
 		}
 		
-		return getScores(finalTeams, numToSkip);
+		return proposedTeams;
 	}
 	
 	public double[][] allCliques(){
@@ -210,7 +214,7 @@ public class Graph {
 			}
 		}
 		
-		tempTeams = getScores(tempTeams, 0);
+//		tempTeams = getScores(tempTeams, 0);
 		
 		return tempTeams;
 	}
@@ -287,7 +291,7 @@ public class Graph {
 	}
 
 	
-	public int highestNode(double[][] adjacency, double[] neighbors) {
+	public int highestNode(double[][] adjacency, int[] neighbors) {
 		/**
 		 * Looking at the current adjacency matrix, find the edge with the highest value and return the corresponding nodes
 		 * input: adjacency (double[][]) -- The adjacency matrix
@@ -299,7 +303,7 @@ public class Graph {
 		double tempVal;
 		for (int x = 0; x < adjacency.length; x++) { //loop through other members to see how good they fit
 			tempVal = 1.0;
-			for (int j = 0; j < neighbors.length; j++) { //check how they fit with each other groupmember
+			for (int j = 0; j < neighbors.length; j++) { //check how they fit with each other group member
 				//  Make sure that x isn't a neighbor; make sure there is a neighbor in the slot being looked at; make sure there is a valid connection
 				if (!helper.searchArray(neighbors, x) && neighbors[j] != -1 && adjacency[x][(int) neighbors[j]] >= 0) {//j isn't in neighbors{
 					tempVal = tempVal * adjacency[x][(int) neighbors[j]];
@@ -320,7 +324,7 @@ public class Graph {
 	}
 	
 
-	public double[][] generateAdjacency(Helper.Profile[] profiles, double skillsWeight, double preferenceWeight) {
+	public double[][] generateAdjacency(PersonProfile[] profiles, double skillsWeight, double preferenceWeight) {
 		double[][] adjacencyArray = new double[profiles.length][profiles.length];
 		int silverBullet;
 		double preferredPartner;
@@ -342,7 +346,7 @@ public class Graph {
 	 * @param preferenceWeight how to weight the preference overlap
 	 * @return the weight of the edge from p1 to p2, where a lower score is more desirable
 	 */
-	 public double calculateEdgeWeight(Helper.Profile p1, Helper.Profile p2, double skillsWeight, double preferenceWeight) {
+	 public double calculateEdgeWeight(PersonProfile p1, PersonProfile p2, double skillsWeight, double preferenceWeight) {
 		 // Silver bullet makes weight 0. 
 		return (((p1.silverBullets.contains(p2.id) || p2.silverBullets.contains(p1.id))) ? 0 : skillsWeight * (1-(helper.dotProduct(p1.skills, p2.skills)/p1.skills.length)) + preferenceWeight * (p1.preferredPartners.contains(p2.id) ? 1 : 0));
 	}
