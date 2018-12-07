@@ -44,14 +44,14 @@ public class ResultScorer {
         // Calculate the mean points for each skill
         score.pointsBySkillMean = new double[numSkills];
         for (int i = 0; i < numSkills; ++i) {
-            score.pointsBySkillMean[i] = (double)score.pointsBySkillSum[i] / numMembers;
+            score.pointsBySkillMean[i] = score.pointsBySkillSum[i] / numMembers;
         }
 
         // Determine the total number of skill "points" possessed by this team
         score.skillPointTotal = DoubleStream.of(score.pointsBySkillSum).sum();
 
         // Determine the average skill rating for all members across all skills
-        score.meanSkillRating = (double)score.skillPointTotal / (numMembers * numSkills);
+        score.meanSkillRating = score.skillPointTotal / (numMembers * numSkills);
 
         team.score = score;
         return score;
