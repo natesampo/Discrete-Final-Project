@@ -7,6 +7,10 @@ import java.util.concurrent.ThreadLocalRandom;
 
 //import ResultScorer;
 
+//import ResultScorer.TeamSetScore;
+
+//import ResultScorer;
+
 public class Graph {
 	private Helper helper;
 	private int cliqueSize;
@@ -16,6 +20,7 @@ public class Graph {
 	private HashSet<Integer> visitedNodes;
 	private HashSet<Integer> coloredClique;
 	private ArrayList<HashSet<Integer>> coloredCliques;
+
 	private ResultScorer scorer;
 
 	public Graph() {
@@ -49,10 +54,11 @@ public class Graph {
 		System.out.println("Result of second greedy implementation:");
 		ObjectPrinter.printTeamArray(teamsFromGreedy2);
 
-//		System.out.println("\n\n");
-//		Team[] teamsFromAllCliques = allCliques(profiles);
+		System.out.println("\n\n");
+		Team[] teamsFromAllCliques = allCliques(profiles);
+		scorer.scoreTeams(teamsFromAllCliques, profiles);
+		Team[] topTeams = topTeams(teamsFromAllCliques);
 //		ObjectPrinter.printTeamArray(teamsFromAllCliques);
-		
 		
 		//getColoredCliques();
 	}
@@ -230,9 +236,7 @@ public class Graph {
 		}
 		Team[] tempTeams = helper.generateTeamArray(numPossTeams, cliqueSize);
 		
-		
 		int currTeam = 0;
-		
 		
 		//numPeeps - 3 because there are 3 other members
 		for (int firstMem = 0; firstMem < numPeeps - 3; firstMem++) {
@@ -258,16 +262,36 @@ public class Graph {
 			}
 		}
 		
-//		TeamSetScore scores = scorer.scoreTeams(tempTeams, profiles);
-		
-//		tempTeams = getScores(tempTeams, 0);
-		
-		Team[] proposedTeams = helper.generateTeamArray(numTeams, cliqueSize);
-		
-//		finalTeams = allCliqueParser(tempTeams);
-		
-		return proposedTeams;
+		//Make sure all teams in returned array are populated
+		Team[] finalTeams = helper.generateTeamArray(currTeam, cliqueSize);
+		for (int i = 0; i < currTeam; i++) {
+			finalTeams[i] = tempTeams[i];
+		}
+
+		return finalTeams;
 	}
+	
+	//Brute force method! It makes me criiiiiiiiiiii
+	public Team[] topTeams(Team[] allTeams) {
+		Team[] tempTeams = helper.generateTeamArray(numTeams, cliqueSize);
+		Team[] finalTeams = helper.generateTeamArray(numTeams, cliqueSize);
+		boolean[] peepsUsed = new boolean[numNodes];
+		int maxTeam = 0;
+		
+		//True brute force: keep the finalTeams together; have a list with corresponding 
+		for (int teamOne = 0; teamOne < allTeams.length - cliqueSize; teamOne++) {
+			for (int teamTwo = teamOne + 1; teamTwo < allTeams.length - cliqueSize + 1; teamTwo++) {
+				for (int teamThree = teamTwo + 1; teamThree < allTeams.length - cliqueSize + 2; teamThree++) {
+					
+				}
+			}
+		}
+		//boolean list. 1 = in use; 0 elsewhere
+		
+		return tempTeams;
+		
+	}
+	
 	
 	public double[][] allCliqueParser(double[][] allTeams) {
 		double[][] finalTeams = new double[numTeams][cliqueSize+1]; 

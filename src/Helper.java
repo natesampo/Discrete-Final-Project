@@ -154,6 +154,41 @@ public class Helper {
 
 		return res;
 	}
+	
+	public static double[] arrayElementWiseRange(double[] a1, double[] min, double[] max) {
+		if (a1.length != min.length)
+			throw new IllegalArgumentException("Lengths of arrays to perform element-wise min on must be equal.");
+		
+		double[] res = new double[a1.length];
+		
+		for (int i = 0; i < a1.length; ++i)
+			res[i] = min[i] - max[i];
+
+		return res;
+	}
+	
+	public static double[] arrayElementWiseSD(double[] a1, double[] a2) {
+		double[] res = new double[a1.length];
+		double sum, standardDeviation;
+		int length = a1.length;
+		double mean;
+		
+		for (int i = 0; i < a1.length; i++) {
+			sum = 0.0;
+			standardDeviation = 0.0;
+			for(double num : a2) {
+	            sum += num;
+	        }
+	        mean = sum/length;
+	        for(double num: a2) {
+	            standardDeviation += Math.pow(num - mean, 2);
+	        }
+	        res[i] = Math.sqrt(standardDeviation/length);
+		}
+		
+		
+		return res;
+	}
 
 	public static double[] arrayElementWiseMax(double[] a1, double[] a2) {
 		if (a1.length != a2.length)
