@@ -95,7 +95,8 @@ public class Helper {
 		int skillsMin = 0;
 		int skillsMax = 1;
 		for (int skillIdx = 0; skillIdx < numSkills; ++skillIdx) {
-			prof.skills[skillIdx] = (ThreadLocalRandom.current().nextInt(skillsMin*100, skillsMax*100 + 1))/100;
+			double points = ThreadLocalRandom.current().nextDouble(skillsMin, skillsMax);
+			prof.skills[skillIdx] = points;
 		}
 
 		// Pick some silver bullets
