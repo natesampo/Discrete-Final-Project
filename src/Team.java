@@ -1,7 +1,7 @@
 public class Team {
 
     public int[] memberIds;
-    public int connectionStrength;
+    public double connectionStrength;
     public ResultScorer.TeamScore score;
 
     public Team(int size) {

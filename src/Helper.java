@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -69,7 +70,7 @@ public class Helper {
 	}
 	
 	
-	public PersonProfile[] generateProfiles(int nodes, int numSkills, int maxSilverBullets) {
+	public PersonProfile[] generateProfiles(int nodes, int numSkills, int maxSilverBullets, int maxPreferredPartners, int numProjects, int projectPreferences) {
 		/*
 		 * 5 Skills Total
 		 * 
@@ -82,13 +83,13 @@ public class Helper {
 		PersonProfile[] profiles = new PersonProfile[nodes];
 		
 		for(int i=0; i<nodes; i++) {
-			profiles[i] = generateRandomProfile(i, numSkills, maxSilverBullets, nodes);
+			profiles[i] = generateRandomProfile(i, numSkills, maxSilverBullets, maxPreferredPartners, numProjects, projectPreferences, nodes);
 		}
 		
 		return profiles;
 	}
 
-	private PersonProfile generateRandomProfile(int id, int numSkills, int maxSilverBullets, int totalNumPeople) {
+	private PersonProfile generateRandomProfile(int id, int numSkills, int maxSilverBullets, int maxPreferredPartners, int numProjects, int projectPreferences, int totalNumPeople) {
 		PersonProfile prof = new PersonProfile(id, numSkills);
 
 		// Generate some random skill levels
@@ -104,6 +105,19 @@ public class Helper {
 		for (int i = 0; i < numSilverBullets; ++i) {
 			int silverBulletedPersonId = ThreadLocalRandom.current().nextInt(0, totalNumPeople);
 			prof.silverBullets.add(silverBulletedPersonId);
+		}
+		
+		// Pick some preferred partners
+		int numPreferredPartners = ThreadLocalRandom.current().nextInt(0, maxPreferredPartners+1);
+		for (int i = 0; i < numPreferredPartners; ++i) {
+			int preferredPartnerPersonId = ThreadLocalRandom.current().nextInt(0, totalNumPeople);
+			prof.preferredPartners.add(preferredPartnerPersonId);
+		}
+		
+		// Pick some project preferences
+		for (int i = 0; i < projectPreferences; ++i) {
+			int projectPreferenceID = ThreadLocalRandom.current().nextInt(0, numProjects);
+			prof.preferredPartners.add(projectPreferenceID);
 		}
 
 		return prof;
@@ -154,6 +168,41 @@ public class Helper {
 
 		return res;
 	}
+	
+	public static double[] arrayElementWiseRange(double[] min, double[] max) {
+		if (min.length != max.length)
+			throw new IllegalArgumentException("Lengths of arrays to perform element-wise range on must be equal.");
+		
+		double[] res = new double[min.length];
+		
+		for (int i = 0; i < min.length; ++i)
+			res[i] = min[i] - max[i];
+
+		return res;
+	}
+	
+	public static double[] arrayElementWiseSD(double[] a1, double[] a2) {
+		double[] res = new double[a1.length];
+		double sum, standardDeviation;
+		int length = a1.length;
+		double mean;
+		
+		for (int i = 0; i < a1.length; i++) {
+			sum = 0.0;
+			standardDeviation = 0.0;
+			for(double num : a2) {
+	            sum += num;
+	        }
+	        mean = sum/length;
+	        for(double num: a2) {
+	            standardDeviation += Math.pow(num - mean, 2);
+	        }
+	        res[i] = Math.sqrt(standardDeviation/length);
+		}
+		
+		
+		return res;
+	}
 
 	public static double[] arrayElementWiseMax(double[] a1, double[] a2) {
 		if (a1.length != a2.length)
@@ -201,6 +250,13 @@ public class Helper {
 			System.out.print(i + " ");
 		}
 		System.out.println("");
+	}
+	
+	public void hashSetArrayPrintInt(ArrayList<HashSet<Integer>> array) {
+		// Iterate over every element in the hash set and send it to be printed
+		for (HashSet<Integer> element : array) {
+			hashSetPrintInt(element);
+		}
 	}
 	
 	

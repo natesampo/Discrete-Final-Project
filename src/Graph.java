@@ -1,33 +1,54 @@
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.concurrent.ThreadLocalRandom;
+
+//import ResultScorer.TeamSetScore;
+
+//import ResultScorer;
+
+//import ResultScorer.TeamSetScore;
+
+//import ResultScorer;
 
 public class Graph {
 	private Helper helper;
 	private int cliqueSize;
 	private int numTeams;
+	private int numNodes;
 	private double[][] adjacency;
 	private HashSet<Integer> visitedNodes;
 	private HashSet<Integer> coloredClique;
+	private ArrayList<HashSet<Integer>> coloredCliques;
+
+	private ResultScorer scorer;
 
 	public Graph() {
-		final int numNodes = 40;
+		numNodes = 80;
 		final int maxSilverBullets = 2;
+		final int maxPreferredPartners = 6;
 		final double skillsWeight = 0.2; // Average dot product looks to be ~1.3
 		final double preferenceWeight = 0.5;
 		final int numSkills = 5;
+		final int numProjects = numNodes * 2;
+		final int projectPreferences = 3;
+		final double projectWeight = 0.3; // Weight per same project in preferred projects
+		
+		scorer = new ResultScorer();
 		
 		cliqueSize = 4;
 
 		helper = new Helper();
 		numTeams = (int) java.lang.Math.ceil((numNodes / cliqueSize));
 
-		final PersonProfile[] profiles = helper.generateProfiles(numNodes, numSkills, maxSilverBullets);
+		final PersonProfile[] profiles = helper.generateProfiles(numNodes, numSkills, maxSilverBullets, maxPreferredPartners, numProjects, projectPreferences);
 		
-		adjacency = generateAdjacency(profiles, skillsWeight, preferenceWeight);
+		adjacency = generateAdjacency(profiles, skillsWeight, preferenceWeight, projectWeight);
 		adjacency = helper.normalize(adjacency);
 
 		ResultScorer scorer = new ResultScorer();
 		
+
 		Team[] teamsFromGreedy1 = greedyCliques();
 		scorer.scoreTeams(teamsFromGreedy1, profiles);
 		System.out.println("Result of first greedy implementation:");
@@ -37,17 +58,33 @@ public class Graph {
 		scorer.scoreTeams(teamsFromGreedy2, profiles);
 		System.out.println("Result of second greedy implementation:");
 		ObjectPrinter.printTeamArray(teamsFromGreedy2);
+
 		System.out.println("\n\n");
-//		helper.arrayPrintDouble2D(allCliques());
+		Team[] teamsFromAllCliques = allCliques(profiles);
+		scorer.scoreTeams(teamsFromAllCliques, profiles);
+		Team[] topTeams = topTeams(teamsFromAllCliques);
+//		ObjectPrinter.printTeamArray(teamsFromAllCliques);
 		
-//		visitedNodes = new HashSet<Integer>();
-//		for (int i=0; i<numNodes; i++) {
-//			if (!visitedNodes.contains(i)) {
-//				coloredClique = getNodeColoredClique(i, new HashSet<Integer>(), 0.95);
-//				helper.hashSetPrintInt(coloredClique);
-//				visitedNodes.addAll(coloredClique);
-//			}
-//		}
+		//getColoredCliques();
+	}
+
+	// Start of recursive colored clique finding
+	public void getColoredCliques() {
+		
+		// O(n^2) time complexity
+		final double minWeight = 0.99;
+
+		visitedNodes = new HashSet<Integer>();
+		for (int i=0; i<numNodes; i++) {
+			if (!visitedNodes.contains(i)) {
+				coloredClique = getNodeColoredClique(i, new HashSet<Integer>(), minWeight);
+				if (coloredClique.size() > 1) {
+					coloredCliques.add(coloredClique);
+					visitedNodes.addAll(coloredClique);
+					helper.hashSetArrayPrintInt(coloredCliques);
+				}
+			}
+		}
 	}
 
 	// Recursive strategy of finding cliques by traveling along edges that are above minWeight
@@ -111,7 +148,7 @@ public class Graph {
 		int row;
 		boolean badTeamingExperience;
 		boolean printFailure = false;
-		int numDeep = 5;
+		int numDeep = 10;
 		for (int teamNum = 0; teamNum < finalTeams.length; teamNum++) {
 			tempScore = 1.0; 
 			badTeamingExperience = false;
@@ -154,6 +191,8 @@ public class Graph {
 	
 
 	public Team[] greedyV2(int numToSkip){
+		//Difference between greedy and greedy v2: Greedy v2 skips the top (numToSkip) edges when picking the next edge to start a clique with
+		
 		double[][] editableAdjacency = helper.arrayCopy(adjacency);
 		int[] newAdditions = new int[2];
 		int newNeighbor;
@@ -175,8 +214,8 @@ public class Graph {
 			for (int rowCol = 0; rowCol < adjacency.length; rowCol++) {
 				for (int currMem = 0; currMem < cliqueSize; currMem++) { //Edit the editableadjacency to make sure we don't select 
 					if(proposedTeams[teamNum].memberIds[currMem] >= 0) {
-						editableAdjacency[(int) proposedTeams[teamNum].memberIds[currMem]][rowCol] = -1;
-						editableAdjacency[rowCol][(int) proposedTeams[teamNum].memberIds[currMem]] = -1;
+						editableAdjacency[proposedTeams[teamNum].memberIds[currMem]][rowCol] = -1;
+						editableAdjacency[rowCol][proposedTeams[teamNum].memberIds[currMem]] = -1;
 					}
 				}
 			}
@@ -185,13 +224,23 @@ public class Graph {
 		return proposedTeams;
 	}
 	
-	public double[][] allCliques(){
+	public Team[] allCliques(PersonProfile[] profiles){
 		int numPeeps = adjacency.length;
-		int numPossTeams = 10626; //24 People
-//		int numPossTeams = 91390; //40 people
-//		int numPossTeams = 1581580; //80 people
+		int numPossTeams = -1;
+		if (numPeeps == 24) {
+			numPossTeams = 10626; //24 People
+		}
+		else if (numPeeps == 40) {
+			numPossTeams = 91390; //40 people
+		}
+		else if (numPeeps == 80){
+			numPossTeams = 1581580; //80 people
+		}
+		else {
+			numPossTeams = 3921225;
+		}
+		Team[] tempTeams = helper.generateTeamArray(numPossTeams, cliqueSize);
 		
-		double[][] tempTeams = new double[numPossTeams][4+1]; //This ONLY does clique sizes of 4. Because magnitude.
 		int currTeam = 0;
 		
 		//numPeeps - 3 because there are 3 other members
@@ -202,14 +251,14 @@ public class Graph {
 						if(adjacency[firstMem][thirdMem] > 0 && adjacency[secondMem][thirdMem] > 0) {
 							for (int fourthMem = thirdMem + 1; fourthMem < numPeeps; fourthMem++) {
 								if(adjacency[firstMem][fourthMem] > 0 && adjacency[secondMem][fourthMem] > 0 && adjacency[thirdMem][fourthMem] > 0 && currTeam < numPossTeams) {
-									tempTeams[currTeam][0] = firstMem;
-									tempTeams[currTeam][1] = secondMem;
-									tempTeams[currTeam][2] = thirdMem;
-									tempTeams[currTeam][3] = fourthMem;
+									tempTeams[currTeam].memberIds[0] = firstMem;
+									tempTeams[currTeam].memberIds[1] = secondMem;
+									tempTeams[currTeam].memberIds[2] = thirdMem;
+									tempTeams[currTeam].memberIds[3] = fourthMem;
 									currTeam++;
 								}
 								else if (currTeam >= numPossTeams) {
-									System.out.println("Wat");
+									System.out.println("Ended up with more teams than possible??");
 								}
 							}
 						}
@@ -218,9 +267,43 @@ public class Graph {
 			}
 		}
 		
-//		tempTeams = getScores(tempTeams, 0);
+		//Make sure all teams in returned array are populated
+		Team[] finalTeams = helper.generateTeamArray(currTeam, cliqueSize);
+		for (int i = 0; i < currTeam; i++) {
+			finalTeams[i] = tempTeams[i];
+		}
+
+		return finalTeams;
+	}
+	
+	//Brute force method! It makes me criiiiiiiiiiii
+	public Team[] topTeams(Team[] allTeams) {
+		Team[] tempTeams = helper.generateTeamArray(numTeams, cliqueSize);
+		Team[] finalTeams = helper.generateTeamArray(numTeams, cliqueSize);
+		boolean[] peepsUsed = new boolean[numNodes];
+		int maxTeam = 0;
+		
+		//True brute force: keep the finalTeams together; have a list with corresponding 
+		for (int teamOne = 0; teamOne < allTeams.length - cliqueSize; teamOne++) {
+			for (int teamTwo = teamOne + 1; teamTwo < allTeams.length - cliqueSize + 1; teamTwo++) {
+				for (int teamThree = teamTwo + 1; teamThree < allTeams.length - cliqueSize + 2; teamThree++) {
+					
+				}
+			}
+		}
+		//boolean list. 1 = in use; 0 elsewhere
 		
 		return tempTeams;
+		
+	}
+	
+	
+	public double[][] allCliqueParser(double[][] allTeams) {
+		double[][] finalTeams = new double[numTeams][cliqueSize+1]; 
+		//Sort the cliques?
+		//Take hte top ones until we're good?
+		//Take a parameter that skips a number of the top ones
+		return finalTeams;
 	}
 
 	public int[] highestEdge(double[][] adjacency) {
@@ -309,8 +392,8 @@ public class Graph {
 			tempVal = 1.0;
 			for (int j = 0; j < neighbors.length; j++) { //check how they fit with each other group member
 				//  Make sure that x isn't a neighbor; make sure there is a neighbor in the slot being looked at; make sure there is a valid connection
-				if (!helper.searchArray(neighbors, x) && neighbors[j] != -1 && adjacency[x][(int) neighbors[j]] >= 0) {//j isn't in neighbors{
-					tempVal = tempVal * adjacency[x][(int) neighbors[j]];
+				if (!helper.searchArray(neighbors, x) && neighbors[j] != -1 && adjacency[x][neighbors[j]] >= 0) {//j isn't in neighbors{
+					tempVal = tempVal * adjacency[x][neighbors[j]];
 				}
 				else {
 					tempVal = 0.0;
@@ -328,14 +411,14 @@ public class Graph {
 	}
 	
 
-	public double[][] generateAdjacency(PersonProfile[] profiles, double skillsWeight, double preferenceWeight) {
+	public double[][] generateAdjacency(PersonProfile[] profiles, double skillsWeight, double preferenceWeight, double projectWeight) {
 		double[][] adjacencyArray = new double[profiles.length][profiles.length];
 		int silverBullet;
 		double preferredPartner;
 		
 		for(int i=0; i<profiles.length; i++) {
 			for(int j=0; j<profiles.length; j++) {
-				adjacencyArray[i][j] = calculateEdgeWeight(profiles[i], profiles[j], skillsWeight, preferenceWeight);
+				adjacencyArray[i][j] = calculateEdgeWeight(profiles[i], profiles[j], skillsWeight, preferenceWeight, projectWeight);
 			}
 		}
 		
@@ -350,12 +433,19 @@ public class Graph {
 	 * @param preferenceWeight how to weight the preference overlap
 	 * @return the weight of the edge from p1 to p2, where a lower score is more desirable
 	 */
-	 public double calculateEdgeWeight(PersonProfile p1, PersonProfile p2, double skillsWeight, double preferenceWeight) {
-		 // Silver bullet makes weight 0. 
-		return (((p1.silverBullets.contains(p2.id) || p2.silverBullets.contains(p1.id))) ? 0 : skillsWeight * (1-(helper.dotProduct(p1.skills, p2.skills)/p1.skills.length)) + preferenceWeight * (p1.preferredPartners.contains(p2.id) ? 1 : 0));
+	 public double calculateEdgeWeight(PersonProfile p1, PersonProfile p2, double skillsWeight, double preferenceWeight, double projectWeight) {
+		 // Silver bullet makes weight 0.
+		 int sameProjects = 0;
+		 for (int element : p2.preferredProjects) {
+			 if (p1.preferredProjects.contains(element)) {
+				 sameProjects++;
+			 }
+		 }
+		 
+		 return (((p1.silverBullets.contains(p2.id) || p2.silverBullets.contains(p1.id))) ? 0 : skillsWeight * (1-(helper.dotProduct(p1.skills, p2.skills)/p1.skills.length)) + preferenceWeight * (p1.preferredPartners.contains(p2.id) ? 1 : 0) + projectWeight * sameProjects);
 	}
 	
 	public static void main(String args[]) {
-		new Graph();	
+		new Graph();
 	}
 }
