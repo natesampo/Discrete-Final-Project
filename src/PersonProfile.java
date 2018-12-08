@@ -5,11 +5,13 @@ public class PersonProfile {
     public double[] skills;
     public HashSet<Integer> preferredPartners;
     public HashSet<Integer> silverBullets;
+    public HashSet<Integer> preferredProjects;
 
     public PersonProfile(int id, int numSkills) {
         this.id = id;
         skills = new double[numSkills];
         preferredPartners = new HashSet<>();
         silverBullets = new HashSet<>();
+        preferredProjects = new HashSet<>();
     }
 }

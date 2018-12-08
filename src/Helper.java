@@ -70,7 +70,7 @@ public class Helper {
 	}
 	
 	
-	public PersonProfile[] generateProfiles(int nodes, int numSkills, int maxSilverBullets, int maxPreferredPartners) {
+	public PersonProfile[] generateProfiles(int nodes, int numSkills, int maxSilverBullets, int maxPreferredPartners, int numProjects, int projectPreferences) {
 		/*
 		 * 5 Skills Total
 		 * 
@@ -83,13 +83,13 @@ public class Helper {
 		PersonProfile[] profiles = new PersonProfile[nodes];
 		
 		for(int i=0; i<nodes; i++) {
-			profiles[i] = generateRandomProfile(i, numSkills, maxSilverBullets, maxPreferredPartners, nodes);
+			profiles[i] = generateRandomProfile(i, numSkills, maxSilverBullets, maxPreferredPartners, numProjects, projectPreferences, nodes);
 		}
 		
 		return profiles;
 	}
 
-	private PersonProfile generateRandomProfile(int id, int numSkills, int maxSilverBullets, int maxPreferredPartners, int totalNumPeople) {
+	private PersonProfile generateRandomProfile(int id, int numSkills, int maxSilverBullets, int maxPreferredPartners, int numProjects, int projectPreferences, int totalNumPeople) {
 		PersonProfile prof = new PersonProfile(id, numSkills);
 
 		// Generate some random skill levels
@@ -106,11 +106,17 @@ public class Helper {
 			prof.silverBullets.add(silverBulletedPersonId);
 		}
 		
-		// Pick some silver bullets
+		// Pick some preferred partners
 		int numPreferredPartners = ThreadLocalRandom.current().nextInt(0, maxPreferredPartners+1);
 		for (int i = 0; i < numPreferredPartners; ++i) {
 			int preferredPartnerPersonId = ThreadLocalRandom.current().nextInt(0, totalNumPeople);
 			prof.preferredPartners.add(preferredPartnerPersonId);
+		}
+		
+		// Pick some project preferences
+		for (int i = 0; i < projectPreferences; ++i) {
+			int projectPreferenceID = ThreadLocalRandom.current().nextInt(0, numProjects);
+			prof.preferredPartners.add(projectPreferenceID);
 		}
 
 		return prof;
@@ -211,6 +217,7 @@ public class Helper {
 	}
 	
 	public void hashSetArrayPrintInt(ArrayList<HashSet<Integer>> array) {
+		// Iterate over every element in the hash set and send it to be printed
 		for (HashSet<Integer> element : array) {
 			hashSetPrintInt(element);
 		}

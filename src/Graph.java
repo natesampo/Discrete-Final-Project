@@ -14,21 +14,24 @@ public class Graph {
 	private ArrayList<HashSet<Integer>> coloredCliques;
 
 	public Graph() {
-		numNodes = 100;
+		numNodes = 80;
 		final int maxSilverBullets = 2;
 		final int maxPreferredPartners = 6;
 		final double skillsWeight = 0.2; // Average dot product looks to be ~1.3
 		final double preferenceWeight = 0.5;
 		final int numSkills = 5;
+		final int numProjects = numNodes * 2;
+		final int projectPreferences = 3;
+		final double projectWeight = 0.3; // Weight per same project in preferred projects
 		
 		cliqueSize = 4;
 
 		helper = new Helper();
 		numTeams = (int) java.lang.Math.ceil((numNodes / cliqueSize));
 
-		final PersonProfile[] profiles = helper.generateProfiles(numNodes, numSkills, maxSilverBullets, maxPreferredPartners);
+		final PersonProfile[] profiles = helper.generateProfiles(numNodes, numSkills, maxSilverBullets, maxPreferredPartners, numProjects, projectPreferences);
 		
-		adjacency = generateAdjacency(profiles, skillsWeight, preferenceWeight);
+		adjacency = generateAdjacency(profiles, skillsWeight, preferenceWeight, projectWeight);
 		adjacency = helper.normalize(adjacency);
 
 		ResultScorer scorer = new ResultScorer();
@@ -346,14 +349,14 @@ public class Graph {
 	}
 	
 
-	public double[][] generateAdjacency(PersonProfile[] profiles, double skillsWeight, double preferenceWeight) {
+	public double[][] generateAdjacency(PersonProfile[] profiles, double skillsWeight, double preferenceWeight, double projectWeight) {
 		double[][] adjacencyArray = new double[profiles.length][profiles.length];
 		int silverBullet;
 		double preferredPartner;
 		
 		for(int i=0; i<profiles.length; i++) {
 			for(int j=0; j<profiles.length; j++) {
-				adjacencyArray[i][j] = calculateEdgeWeight(profiles[i], profiles[j], skillsWeight, preferenceWeight);
+				adjacencyArray[i][j] = calculateEdgeWeight(profiles[i], profiles[j], skillsWeight, preferenceWeight, projectWeight);
 			}
 		}
 		
@@ -368,9 +371,16 @@ public class Graph {
 	 * @param preferenceWeight how to weight the preference overlap
 	 * @return the weight of the edge from p1 to p2, where a lower score is more desirable
 	 */
-	 public double calculateEdgeWeight(PersonProfile p1, PersonProfile p2, double skillsWeight, double preferenceWeight) {
+	 public double calculateEdgeWeight(PersonProfile p1, PersonProfile p2, double skillsWeight, double preferenceWeight, double projectWeight) {
 		 // Silver bullet makes weight 0.
-		 return (((p1.silverBullets.contains(p2.id) || p2.silverBullets.contains(p1.id))) ? 0 : skillsWeight * (1-(helper.dotProduct(p1.skills, p2.skills)/p1.skills.length)) + preferenceWeight * (p1.preferredPartners.contains(p2.id) ? 1 : 0));
+		 int sameProjects = 0;
+		 for (int element : p2.preferredProjects) {
+			 if (p1.preferredProjects.contains(element)) {
+				 sameProjects++;
+			 }
+		 }
+		 
+		 return (((p1.silverBullets.contains(p2.id) || p2.silverBullets.contains(p1.id))) ? 0 : skillsWeight * (1-(helper.dotProduct(p1.skills, p2.skills)/p1.skills.length)) + preferenceWeight * (p1.preferredPartners.contains(p2.id) ? 1 : 0) + projectWeight * sameProjects);
 	}
 	
 	public static void main(String args[]) {
