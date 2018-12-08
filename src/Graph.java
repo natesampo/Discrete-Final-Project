@@ -3,6 +3,14 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.concurrent.ThreadLocalRandom;
 
+//import ResultScorer.TeamSetScore;
+
+//import ResultScorer;
+
+//import ResultScorer.TeamSetScore;
+
+//import ResultScorer;
+
 public class Graph {
 	private Helper helper;
 	private int cliqueSize;
@@ -12,6 +20,8 @@ public class Graph {
 	private HashSet<Integer> visitedNodes;
 	private HashSet<Integer> coloredClique;
 	private ArrayList<HashSet<Integer>> coloredCliques;
+
+	private ResultScorer scorer;
 
 	public Graph() {
 		numNodes = 80;
@@ -23,6 +33,8 @@ public class Graph {
 		final int numProjects = numNodes * 2;
 		final int projectPreferences = 3;
 		final double projectWeight = 0.3; // Weight per same project in preferred projects
+		
+		scorer = new ResultScorer();
 		
 		cliqueSize = 4;
 
@@ -36,7 +48,7 @@ public class Graph {
 
 		ResultScorer scorer = new ResultScorer();
 		
-/*
+
 		Team[] teamsFromGreedy1 = greedyCliques();
 		scorer.scoreTeams(teamsFromGreedy1, profiles);
 		System.out.println("Result of first greedy implementation:");
@@ -46,8 +58,12 @@ public class Graph {
 		scorer.scoreTeams(teamsFromGreedy2, profiles);
 		System.out.println("Result of second greedy implementation:");
 		ObjectPrinter.printTeamArray(teamsFromGreedy2);
-		System.out.println("\n\n");*/
-//		helper.arrayPrintDouble2D(allCliques());
+
+		System.out.println("\n\n");
+		Team[] teamsFromAllCliques = allCliques(profiles);
+		scorer.scoreTeams(teamsFromAllCliques, profiles);
+		Team[] topTeams = topTeams(teamsFromAllCliques);
+//		ObjectPrinter.printTeamArray(teamsFromAllCliques);
 		
 		//getColoredCliques();
 	}
@@ -132,7 +148,7 @@ public class Graph {
 		int row;
 		boolean badTeamingExperience;
 		boolean printFailure = false;
-		int numDeep = 5;
+		int numDeep = 10;
 		for (int teamNum = 0; teamNum < finalTeams.length; teamNum++) {
 			tempScore = 1.0; 
 			badTeamingExperience = false;
@@ -175,6 +191,8 @@ public class Graph {
 	
 
 	public Team[] greedyV2(int numToSkip){
+		//Difference between greedy and greedy v2: Greedy v2 skips the top (numToSkip) edges when picking the next edge to start a clique with
+		
 		double[][] editableAdjacency = helper.arrayCopy(adjacency);
 		int[] newAdditions = new int[2];
 		int newNeighbor;
@@ -196,8 +214,8 @@ public class Graph {
 			for (int rowCol = 0; rowCol < adjacency.length; rowCol++) {
 				for (int currMem = 0; currMem < cliqueSize; currMem++) { //Edit the editableadjacency to make sure we don't select 
 					if(proposedTeams[teamNum].memberIds[currMem] >= 0) {
-						editableAdjacency[(int) proposedTeams[teamNum].memberIds[currMem]][rowCol] = -1;
-						editableAdjacency[rowCol][(int) proposedTeams[teamNum].memberIds[currMem]] = -1;
+						editableAdjacency[proposedTeams[teamNum].memberIds[currMem]][rowCol] = -1;
+						editableAdjacency[rowCol][proposedTeams[teamNum].memberIds[currMem]] = -1;
 					}
 				}
 			}
@@ -206,13 +224,23 @@ public class Graph {
 		return proposedTeams;
 	}
 	
-	public double[][] allCliques(){
+	public Team[] allCliques(PersonProfile[] profiles){
 		int numPeeps = adjacency.length;
-		int numPossTeams = 10626; //24 People
-//		int numPossTeams = 91390; //40 people
-//		int numPossTeams = 1581580; //80 people
+		int numPossTeams = -1;
+		if (numPeeps == 24) {
+			numPossTeams = 10626; //24 People
+		}
+		else if (numPeeps == 40) {
+			numPossTeams = 91390; //40 people
+		}
+		else if (numPeeps == 80){
+			numPossTeams = 1581580; //80 people
+		}
+		else {
+			numPossTeams = 3921225;
+		}
+		Team[] tempTeams = helper.generateTeamArray(numPossTeams, cliqueSize);
 		
-		double[][] tempTeams = new double[numPossTeams][4+1]; //This ONLY does clique sizes of 4. Because magnitude.
 		int currTeam = 0;
 		
 		//numPeeps - 3 because there are 3 other members
@@ -223,14 +251,14 @@ public class Graph {
 						if(adjacency[firstMem][thirdMem] > 0 && adjacency[secondMem][thirdMem] > 0) {
 							for (int fourthMem = thirdMem + 1; fourthMem < numPeeps; fourthMem++) {
 								if(adjacency[firstMem][fourthMem] > 0 && adjacency[secondMem][fourthMem] > 0 && adjacency[thirdMem][fourthMem] > 0 && currTeam < numPossTeams) {
-									tempTeams[currTeam][0] = firstMem;
-									tempTeams[currTeam][1] = secondMem;
-									tempTeams[currTeam][2] = thirdMem;
-									tempTeams[currTeam][3] = fourthMem;
+									tempTeams[currTeam].memberIds[0] = firstMem;
+									tempTeams[currTeam].memberIds[1] = secondMem;
+									tempTeams[currTeam].memberIds[2] = thirdMem;
+									tempTeams[currTeam].memberIds[3] = fourthMem;
 									currTeam++;
 								}
 								else if (currTeam >= numPossTeams) {
-									System.out.println("Wat");
+									System.out.println("Ended up with more teams than possible??");
 								}
 							}
 						}
@@ -239,9 +267,43 @@ public class Graph {
 			}
 		}
 		
-//		tempTeams = getScores(tempTeams, 0);
+		//Make sure all teams in returned array are populated
+		Team[] finalTeams = helper.generateTeamArray(currTeam, cliqueSize);
+		for (int i = 0; i < currTeam; i++) {
+			finalTeams[i] = tempTeams[i];
+		}
+
+		return finalTeams;
+	}
+	
+	//Brute force method! It makes me criiiiiiiiiiii
+	public Team[] topTeams(Team[] allTeams) {
+		Team[] tempTeams = helper.generateTeamArray(numTeams, cliqueSize);
+		Team[] finalTeams = helper.generateTeamArray(numTeams, cliqueSize);
+		boolean[] peepsUsed = new boolean[numNodes];
+		int maxTeam = 0;
+		
+		//True brute force: keep the finalTeams together; have a list with corresponding 
+		for (int teamOne = 0; teamOne < allTeams.length - cliqueSize; teamOne++) {
+			for (int teamTwo = teamOne + 1; teamTwo < allTeams.length - cliqueSize + 1; teamTwo++) {
+				for (int teamThree = teamTwo + 1; teamThree < allTeams.length - cliqueSize + 2; teamThree++) {
+					
+				}
+			}
+		}
+		//boolean list. 1 = in use; 0 elsewhere
 		
 		return tempTeams;
+		
+	}
+	
+	
+	public double[][] allCliqueParser(double[][] allTeams) {
+		double[][] finalTeams = new double[numTeams][cliqueSize+1]; 
+		//Sort the cliques?
+		//Take hte top ones until we're good?
+		//Take a parameter that skips a number of the top ones
+		return finalTeams;
 	}
 
 	public int[] highestEdge(double[][] adjacency) {
@@ -330,8 +392,8 @@ public class Graph {
 			tempVal = 1.0;
 			for (int j = 0; j < neighbors.length; j++) { //check how they fit with each other group member
 				//  Make sure that x isn't a neighbor; make sure there is a neighbor in the slot being looked at; make sure there is a valid connection
-				if (!helper.searchArray(neighbors, x) && neighbors[j] != -1 && adjacency[x][(int) neighbors[j]] >= 0) {//j isn't in neighbors{
-					tempVal = tempVal * adjacency[x][(int) neighbors[j]];
+				if (!helper.searchArray(neighbors, x) && neighbors[j] != -1 && adjacency[x][neighbors[j]] >= 0) {//j isn't in neighbors{
+					tempVal = tempVal * adjacency[x][neighbors[j]];
 				}
 				else {
 					tempVal = 0.0;

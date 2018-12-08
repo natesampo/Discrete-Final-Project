@@ -39,19 +39,51 @@ public class ResultScorer {
             score.pointsBySkillSum = Helper.sumArrays(score.pointsBySkillSum, skills);
             score.pointsBySkillMin = Helper.arrayElementWiseMin(score.pointsBySkillMin, skills);
             score.pointsBySkillMax = Helper.arrayElementWiseMax(score.pointsBySkillMax, skills);
+            
         }
 
+        score.pointsBySkillRange = Helper.arrayElementWiseRange(score.pointsBySkillRange, score.pointsBySkillMin, score.pointsBySkillMax);
+        
+
+        double SD = 0.0;
         // Calculate the mean points for each skill
         score.pointsBySkillMean = new double[numSkills];
         for (int i = 0; i < numSkills; ++i) {
-            score.pointsBySkillMean[i] = (double)score.pointsBySkillSum[i] / numMembers;
+            score.pointsBySkillMean[i] = score.pointsBySkillSum[i] / numMembers;
+            for (int memberId : team.memberIds) {
+                if (memberId == -1)
+                    continue;
+
+                PersonProfile profile = profiles[memberId];
+                double[] skills = profile.skills;
+                SD += Math.pow(skills[i] - score.pointsBySkillMean[i], 2);
+                
+            }
+            score.pointsBySkillSD[i] = Math.sqrt(SD/team.memberIds.length);
         }
 
         // Determine the total number of skill "points" possessed by this team
         score.skillPointTotal = DoubleStream.of(score.pointsBySkillSum).sum();
 
+        double avgSkillTotal = score.skillPointTotal/team.memberIds.length;
+        double totSD = 0;
+        for (int memberId : team.memberIds) {
+            if (memberId == -1)
+                continue;
+
+            PersonProfile profile = profiles[memberId];
+            double[] skills = profile.skills;
+            double tempsum = 0;
+            for (double skill : skills) {
+            	tempsum += skill;
+            }
+            totSD += Math.pow(avgSkillTotal - tempsum, 2);
+            
+        }
+        score.pointsSD = totSD;
+
         // Determine the average skill rating for all members across all skills
-        score.meanSkillRating = (double)score.skillPointTotal / (numMembers * numSkills);
+        score.meanSkillRating = score.skillPointTotal / (numMembers * numSkills);
 
         team.score = score;
         return score;
@@ -77,6 +109,11 @@ public class ResultScorer {
         public double[] pointsBySkillMax;
         public double[] pointsBySkillMean;
         public double[] pointsBySkillSum;
+        public double[] pointsBySkillRange;
+        public double[] pointsBySkillSD;
+        
+        public double pointsRange;
+        public double pointsSD;
 
         // The average (mean) rating across all skills and across all team members
         public double meanSkillRating;
