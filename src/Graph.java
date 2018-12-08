@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.concurrent.ThreadLocalRandom;
 
 //import ResultScorer.TeamSetScore;
 
@@ -49,6 +48,11 @@ public class Graph {
 		ResultScorer scorer = new ResultScorer();
 		
 
+		Team[] randomTeams = randomTeams(profiles);
+		scorer.scoreTeams(randomTeams, profiles);
+		System.out.println("Result of random teams:");
+		ObjectPrinter.printTeamArray(randomTeams);
+		System.out.println("\n\n");
 		Team[] teamsFromGreedy1 = greedyCliques();
 		scorer.scoreTeams(teamsFromGreedy1, profiles);
 		System.out.println("Result of first greedy implementation:");
@@ -104,6 +108,19 @@ public class Graph {
 		}
 		
 		return connected;
+	}
+	
+	public Team[] randomTeams(PersonProfile[] profiles) {
+		// Generate random teams to test against (keeping silver bullets in mind)
+		Team[] teams = helper.generateTeamArray(numTeams, cliqueSize);
+		
+		for (int i=0; i<numTeams; i++) {
+			for (int j=0; j<cliqueSize; j++) {
+				teams[i].memberIds[j] = profiles[4*i + j].id;
+			}
+		}
+		
+		return teams;
 	}
 
 	//Returns a matrix with rows showing different teams with the first column being a score out of 100
@@ -338,7 +355,6 @@ public class Graph {
 		 * input: adjacency (double[][]) -- The adjacency matrix
 		 * output: locs (int[2]) -- locations of nodes whose edge is highest. 
 		 */
-		int[] locs = new int[2];
 		double currHigh = -1;
 		int numIgnored = 0;
 		double[] valsIgnored = new double[numToIgnore + 1];
@@ -413,8 +429,6 @@ public class Graph {
 
 	public double[][] generateAdjacency(PersonProfile[] profiles, double skillsWeight, double preferenceWeight, double projectWeight) {
 		double[][] adjacencyArray = new double[profiles.length][profiles.length];
-		int silverBullet;
-		double preferredPartner;
 		
 		for(int i=0; i<profiles.length; i++) {
 			for(int j=0; j<profiles.length; j++) {
