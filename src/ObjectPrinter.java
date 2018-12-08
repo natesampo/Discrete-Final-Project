@@ -2,6 +2,26 @@ import java.lang.StringBuilder;
 
 public class ObjectPrinter {
 
+    private static final int DOUBLE_DECIMAL_PLACES = 2;
+
+    public static void printTeamSetScore(ResultScorer.TeamSetScore score) {
+        printTeamArray(score.teams);
+
+        // Print out the summary statistics
+        StringBuilder sb = new StringBuilder();
+        sb.append(score.allTeamsValid ? "All teams valid" : "Some teams invalid");
+        sb.append("\tTotal skill minimum: ");
+        appendDouble(sb, score.totalSkillMin);
+        sb.append("\tTotal skill maximum: ");
+        appendDouble(sb, score.totalSkillMax);
+        sb.append("\tTotal skill range: ");
+        appendDouble(sb, score.totalSkillMax - score.totalSkillMin);
+        sb.append("\tPoints by skill total SD: ");
+        appendArray(sb, score.pointsBySkillSD);
+
+        System.out.println(sb.toString());
+    }
+
     public static void printTeamArray(Team[] teams) {
         for (Team t : teams) {
             printTeam(t);
@@ -10,7 +30,6 @@ public class ObjectPrinter {
 
     public static void printTeam(Team t) {
         StringBuilder sb = new StringBuilder();
-        int doubleDecimalPlaces = 2;
 
         sb.append("Members: ");
         for (int memberId : t.memberIds) {
@@ -18,53 +37,54 @@ public class ObjectPrinter {
             sb.append('\t');
         }
 
+        sb.append(t.score.isValid ? "Valid   " : "Invalid ");
+        sb.append('\t');
+
         sb.append("Connection strength: ");
-        addFormattedDouble(sb, t.connectionStrength, doubleDecimalPlaces);
+        appendDouble(sb, t.connectionStrength);
         sb.append('\t');
 
         sb.append("Total points: ");
-        addFormattedDouble(sb, t.score.skillPointTotal, doubleDecimalPlaces);
+        appendDouble(sb, t.score.skillPointTotal);
         sb.append('\t');
 
         sb.append("By skill total: ");
-        sb.append(arrayToString(t.score.pointsBySkillSum, doubleDecimalPlaces));
+        appendArray(sb, t.score.pointsBySkillSum);
         sb.append('\t');
 
         sb.append("By skill range: ");
-        sb.append(arrayToString(t.score.pointsBySkillRange, doubleDecimalPlaces));
+        appendArray(sb, t.score.pointsBySkillRange);
         sb.append('\t');
 
         sb.append("By skill mean: ");
-        sb.append(arrayToString(t.score.pointsBySkillMean, doubleDecimalPlaces));
+        appendArray(sb, t.score.pointsBySkillMean);
         sb.append('\t');
 
         sb.append("By skill SD: ");
-        sb.append(arrayToString(t.score.pointsBySkillSD, doubleDecimalPlaces));
+        appendArray(sb, t.score.pointsBySkillSD);
         sb.append('\t');
 
         sb.append("Mean skill points: ");
-        addFormattedDouble(sb, t.score.meanSkillRating, doubleDecimalPlaces);
+        appendDouble(sb, t.score.meanSkillRating);
 
         System.out.println(sb.toString());
     }
 
-    private static void addFormattedDouble(StringBuilder sb, double num, int decPlaces) {
-        sb.append(String.format("%." + decPlaces + "f", num));
+    private static void appendDouble(StringBuilder sb, double num) {
+        sb.append(String.format("%." + DOUBLE_DECIMAL_PLACES + "f", num));
     }
 
-    public static String arrayToString(double[] arr, int numDecimalPlaces) {
-        StringBuilder sb = new StringBuilder();
+    public static void appendArray(StringBuilder sb, double[] arr) {
         sb.append('[');
 
         for (int i = 0; i < arr.length; ++i) {
             double n = arr[i];
-            addFormattedDouble(sb, n, numDecimalPlaces);
+            appendDouble(sb, n);
             if (i < arr.length - 1)
                 sb.append(", ");
         }
 
         sb.append(']');
-        return sb.toString();
     }
 
 }

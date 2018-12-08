@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.concurrent.ThreadLocalRandom;
 
 //import ResultScorer.TeamSetScore;
 
@@ -24,7 +23,6 @@ public class Graph {
 	private ResultScorer scorer;
 
 	public Graph() {
-		numNodes = 80;
 		final int maxSilverBullets = 2;
 		final int maxPreferredPartners = 6;
 		final double skillsWeight = 0.2; // Average dot product looks to be ~1.3
@@ -39,25 +37,27 @@ public class Graph {
 		cliqueSize = 4;
 
 		helper = new Helper();
+
+//		final PersonProfile[] profiles = helper.generateProfiles(numNodes, numSkills, maxSilverBullets, maxPreferredPartners, numProjects, projectPreferences);
+		final PersonProfile[] profiles = CSVReader.readProfiles("Teaming_Anonymized.csv");
+
+		numNodes = profiles.length;
 		numTeams = (int) java.lang.Math.ceil((numNodes / cliqueSize));
 
-		final PersonProfile[] profiles = helper.generateProfiles(numNodes, numSkills, maxSilverBullets, maxPreferredPartners, numProjects, projectPreferences);
-		
+
 		adjacency = generateAdjacency(profiles, skillsWeight, preferenceWeight, projectWeight);
 		adjacency = helper.normalize(adjacency);
 
-		ResultScorer scorer = new ResultScorer();
-		
 
 		Team[] teamsFromGreedy1 = greedyCliques();
-		scorer.scoreTeams(teamsFromGreedy1, profiles);
+		ResultScorer.TeamSetScore score1 = scorer.scoreTeams(teamsFromGreedy1, profiles);
 		System.out.println("Result of first greedy implementation:");
-		ObjectPrinter.printTeamArray(teamsFromGreedy1);
+		ObjectPrinter.printTeamSetScore(score1);
 		System.out.println("\n\n");
 		Team[] teamsFromGreedy2 = greedyV2(0);
-		scorer.scoreTeams(teamsFromGreedy2, profiles);
+		ResultScorer.TeamSetScore score2 = scorer.scoreTeams(teamsFromGreedy2, profiles);
 		System.out.println("Result of second greedy implementation:");
-		ObjectPrinter.printTeamArray(teamsFromGreedy2);
+		ObjectPrinter.printTeamSetScore(score2);
 
 		System.out.println("\n\n");
 //		Team[] teamsFromAllCliques = allCliques(profiles);

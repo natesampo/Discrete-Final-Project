@@ -1,14 +1,36 @@
+import java.util.HashSet;
 import java.util.stream.DoubleStream;
 
 public class ResultScorer {
 
     public TeamSetScore scoreTeams(Team[] teams, PersonProfile[] profiles) {
-        TeamSetScore score = new TeamSetScore(teams.length);
+        TeamSetScore score = new TeamSetScore(teams);
+
+        // First score all the teams and check their validity
+        score.allTeamsValid = true;
         for (int i = 0; i < teams.length; ++i) {
             Team team = teams[i];
             TeamScore teamScore = scoreTeam(team, profiles);
             score.teamScores[i] = teamScore;
+            score.allTeamsValid = score.allTeamsValid && team.score.isValid;
         }
+
+        // Then compute some summary statistics
+        score.totalSkillMin = score.teamScores[0].skillPointTotal; // Initialize this to the first team's total
+        int numSkills = teams[0].score.pointsBySkillSum.length;
+        double[][] skillPointTotals = new double[teams.length][numSkills];
+        for (int i = 0; i < teams.length; ++i) {
+            TeamScore teamScore = score.teamScores[i];
+            score.totalSkillMin = Math.min(score.totalSkillMin, teamScore.skillPointTotal);
+            score.totalSkillMax = Math.max(score.totalSkillMax, teamScore.skillPointTotal);
+            System.arraycopy(teamScore.pointsBySkillSum, 0, skillPointTotals[i], 0, teamScore.pointsBySkillSum.length);
+        }
+        // Finish calculating skill point total SD
+        score.pointsBySkillSD = computeStandardDevs(skillPointTotals);
+
+        // TODO: Calculate preference meeting percentage
+
+
         return score;
     }
 
@@ -19,6 +41,17 @@ public class ResultScorer {
 
         TeamScore score = new TeamScore();
 
+        // Check for silver bullet violations
+        HashSet<Integer> teamMembers = new HashSet<>();
+        HashSet<Integer> silverBullets = new HashSet<>();
+        for (int memberId : team.memberIds) {
+            teamMembers.add(memberId);
+            silverBullets.addAll(profiles[memberId].silverBullets);
+        }
+        teamMembers.removeAll(silverBullets);
+        // If a member was removed because they were listed as a silver bullet, then
+        // the following will be false
+        score.isValid = teamMembers.size() == team.memberIds.length;
         int numSkills = profiles[0].skills.length;
         int numMembers = team.memberIds.length;
 
@@ -45,10 +78,10 @@ public class ResultScorer {
         score.pointsBySkillRange = Helper.arrayElementWiseRange(score.pointsBySkillMin, score.pointsBySkillMax);
         
 
-        double SD = 0.0;
-        // Calculate the mean points for each skill
+        // Calculate the mean and standard deviation for each skill
         score.pointsBySkillMean = new double[numSkills];
         score.pointsBySkillSD = new double[numSkills];
+        double SD = 0.0;
         for (int i = 0; i < numSkills; ++i) {
             score.pointsBySkillMean[i] = score.pointsBySkillSum[i] / numMembers;
             for (int memberId : team.memberIds) {
@@ -90,16 +123,76 @@ public class ResultScorer {
         return score;
     }
 
+    private static double computeStandardDev(double[] arr) {
+        double mean = computeMean(arr);
+
+        double runningSum = 0;
+        for (double d : arr)
+            runningSum += Math.pow(d - mean, 2);
+
+        return Math.sqrt(runningSum / arr.length);
+    }
+
+    private static double[] computeStandardDevs(double[][] arr) {
+        double[] means = computeMeans(arr);
+
+        // Compute the sum terms
+        double[] runningSums = new double[means.length];
+        for (double[] d : arr)
+            for (int i = 0; i < means.length; ++i)
+                runningSums[i] += Math.pow(d[i] - means[i], 2);
+
+        // Divide by N and take the root
+        for (int i = 0; i < runningSums.length; ++i)
+            runningSums[i] = Math.sqrt(runningSums[i] / arr.length);
+
+        return runningSums;
+    }
+
+    private static double[] computeMeans(double[][] arr) {
+        double[] res = new double[arr[0].length];
+
+        // Sum up the components
+        for (double[] a : arr)
+            for (int i = 0; i < a.length; ++i)
+                res[i] += a[i];
+
+        // Divide the sum by the size
+        for (int i = 0; i < res.length; ++i)
+            res[i] = res[i] / arr.length;
+
+        return res;
+    }
+
+    private static double computeMean(double[] arr) {
+        double tot = 0;
+        for (double d : arr)
+            tot += d;
+        return tot / arr.length;
+    }
+
     public class TeamSetScore {
+        public Team[] teams;
+        public boolean allTeamsValid;
         public TeamScore[] teamScores;
+        public double[] pointsBySkillSD;
+        public double totalSkillRange;
+        public double totalSkillSD;
+        public double totalSkillMin;
+        public double totalSkillMax;
+
         // TODO: Implement overall stats
 
-        public TeamSetScore(int numTeams) {
-            teamScores = new TeamScore[numTeams];
+        public TeamSetScore(Team[] teams) {
+            this.teams = teams;
+            teamScores = new TeamScore[teams.length];
         }
     }
 
     public class TeamScore {
+
+        // Keep track of if the team is invalid for any reason (e.g. silver bullets)
+        public boolean isValid = true;
 
         // The total number of "points" for all skills across all members.
         public double skillPointTotal;

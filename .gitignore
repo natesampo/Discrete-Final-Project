@@ -1,3 +1,6 @@
+### Potentially Sensitive Data ###
+*.csv
+
 ### IntelliJ ###
 .idea/
 
