@@ -48,6 +48,7 @@ public class ResultScorer {
         double SD = 0.0;
         // Calculate the mean points for each skill
         score.pointsBySkillMean = new double[numSkills];
+        score.pointsBySkillSD = new double[numSkills];
         for (int i = 0; i < numSkills; ++i) {
             score.pointsBySkillMean[i] = score.pointsBySkillSum[i] / numMembers;
             for (int memberId : team.memberIds) {
@@ -59,7 +60,6 @@ public class ResultScorer {
                 SD += Math.pow(skills[i] - score.pointsBySkillMean[i], 2);
                 
             }
-            score.pointsBySkillSD = new double[numSkills];
             score.pointsBySkillSD[i] = Math.sqrt(SD/team.memberIds.length);
         }
 

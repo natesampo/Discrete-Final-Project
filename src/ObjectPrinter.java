@@ -22,12 +22,24 @@ public class ObjectPrinter {
         addFormattedDouble(sb, t.connectionStrength, doubleDecimalPlaces);
         sb.append('\t');
 
-        sb.append("Total skill points: ");
+        sb.append("Total points: ");
         addFormattedDouble(sb, t.score.skillPointTotal, doubleDecimalPlaces);
         sb.append('\t');
 
-        sb.append("Total points by skill: ");
+        sb.append("By skill total: ");
         sb.append(arrayToString(t.score.pointsBySkillSum, doubleDecimalPlaces));
+        sb.append('\t');
+
+        sb.append("By skill range: ");
+        sb.append(arrayToString(t.score.pointsBySkillRange, doubleDecimalPlaces));
+        sb.append('\t');
+
+        sb.append("By skill mean: ");
+        sb.append(arrayToString(t.score.pointsBySkillMean, doubleDecimalPlaces));
+        sb.append('\t');
+
+        sb.append("By skill SD: ");
+        sb.append(arrayToString(t.score.pointsBySkillSD, doubleDecimalPlaces));
         sb.append('\t');
 
         sb.append("Mean skill points: ");

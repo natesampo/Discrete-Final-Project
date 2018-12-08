@@ -60,9 +60,9 @@ public class Graph {
 		ObjectPrinter.printTeamArray(teamsFromGreedy2);
 
 		System.out.println("\n\n");
-		Team[] teamsFromAllCliques = allCliques(profiles);
-		scorer.scoreTeams(teamsFromAllCliques, profiles);
-		Team[] topTeams = topTeams(teamsFromAllCliques);
+//		Team[] teamsFromAllCliques = allCliques(profiles);
+//		scorer.scoreTeams(teamsFromAllCliques, profiles);
+//		Team[] topTeams = topTeams(teamsFromAllCliques);
 //		ObjectPrinter.printTeamArray(teamsFromAllCliques);
 		
 		//getColoredCliques();

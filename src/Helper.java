@@ -176,7 +176,7 @@ public class Helper {
 		double[] res = new double[min.length];
 		
 		for (int i = 0; i < min.length; ++i)
-			res[i] = min[i] - max[i];
+			res[i] = max[i] - min[i];
 
 		return res;
 	}
