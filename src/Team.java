@@ -12,5 +12,13 @@ public class Team {
     public String toString() {
         return "Members: " + memberIds.toString() + ", connection strength: " + connectionStrength;
     }
+    
+    public void increaseSize(int amt) {
+    	int[] newIds = new int[amt + this.memberIds.length];
+    	for(int i = 0; i < this.memberIds.length; i++) {
+    		newIds[i] = this.memberIds[i];
+    	}
+    	this.memberIds = newIds;
+    }
 
 }

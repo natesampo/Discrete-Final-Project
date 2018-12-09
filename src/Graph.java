@@ -50,7 +50,7 @@ public class Graph {
 
 		numNodes = profiles.length;
 		numTeams = (int) java.lang.Math.ceil((numNodes / cliqueSize));
-		avgScore = helper.averageSkillTotal(profiles);
+		avgScore = helper.averageSkillTotal(profiles)*cliqueSize;
 
 
 		adjacency = generateAdjacency(profiles, skillsWeight, preferenceWeight, projectWeight);
@@ -75,11 +75,19 @@ public class Graph {
 		System.out.println("\n\n");
 		Team[] teamsFromAllCliques = allCliques(profiles);
 		scorer.scoreTeams(teamsFromAllCliques, profiles);
-		Team[] bruteTeams = bruteCliques(teamsFromAllCliques, scorer, profiles);
-//		Team[] topTeams = topTeams(teamsFromAllCliques);
-		ObjectPrinter.printTeamArray(bruteTeams);
-		System.out.println("we good.");
+//		Team[] bruteTeams = bruteCliques(teamsFromAllCliques, scorer, profiles);
+////		Team[] topTeams = topTeams(teamsFromAllCliques);
+//		ObjectPrinter.printTeamArray(bruteTeams);
+//		System.out.println("we good.");
 		
+		Team[] greedyCliqueTeams = greedyCliques(teamsFromAllCliques, scorer, profiles);
+//		ObjectPrinter.printTeamArray(greedyCliqueTeams);
+		ResultScorer.TeamSetScore score3 = scorer.scoreTeams(greedyCliqueTeams, profiles);
+		System.out.println("Result of runnable allClique implementation:");
+		ObjectPrinter.printTeamSetScore(score3);
+		System.out.println("we good.");
+		System.out.printf("Avgscore: %f", avgScore);
+//		
 		//getColoredCliques();
 	}
 
@@ -269,6 +277,11 @@ public class Graph {
 		
 	}
 	
+	public Team[] greedyBruteClique() {
+		Team[] tempTeam = helper.generateTeamArray(numTeams, cliqueSize);
+		return tempTeam;
+	}
+	
 	//membersUsed of True means it's used
 	public Team[] recursiveSoln(Team[] currTeam, Team[] allTeams, int maxUsed, boolean[] membersUsed, ResultScorer scorer, PersonProfile[] profiles) {
 		Team[] tempTeam = helper.generateTeamArray(numTeams, cliqueSize);
@@ -339,18 +352,20 @@ public class Graph {
 	}
 	
 	public Team[] recursiveSolnV2(Team[] currTeam, Team[] allTeams, boolean[] membersUsed, ResultScorer scorer, PersonProfile[] profiles) {
+		//If we have the right number of teams, return the teams
 		if(currTeam.length == numTeams) {
 //			System.out.println("We returned something!");
 			return currTeam;
-			
 		}
+		//Set up variables
 		Team[] tempTeam = helper.generateTeamArray(numTeams, cliqueSize);
 		Team[] finTeam = helper.generateTeamArray(numTeams, cliqueSize);
-		
 		double score = 0.0;
 		ResultScorer.TeamSetScore tempScorer;
 		int newAllTeamLen = 0;
 		int[] goodTeams = new int[allTeams.length];
+		boolean finTeamGood = false;
+		boolean keepTeam;
 		
 		//Start generating the old team
 		Team[] newCurrTeam = helper.generateTeamArray(currTeam.length + 1, cliqueSize);
@@ -370,20 +385,18 @@ public class Graph {
 		else if (numTeams - currTeam.length == 3) {
 			System.out.println("3 left checkin.");
 		}
-		else if (numTeams - currTeam.length == 2) {
-			System.out.println("2 left checkin.");
-		}
-		else if (numTeams - currTeam.length == 1) {
-			System.out.println("1 left checkin.");
-		}
-		
-		boolean finTeamGood = false;
-		
-		boolean keepTeam;
+//		else if (numTeams - currTeam.length == 2) {
+//			System.out.println("2 left checkin.");
+//		}
+//		else if (numTeams - currTeam.length == 1) {
+//			System.out.println("1 left checkin.");
+//		}
 		
 		for(int i = 0; i < allTeams.length - numTeams + currTeam.length; i++) {
 			//Update the newCurrTeam and corresponding membersUsed
 			newCurrTeam[currTeam.length] = allTeams[i]; 
+			//Reset how many people are in the length of it
+			newAllTeamLen = 0;
 			for(int j : allTeams[i].memberIds) {
 				membersUsed[j] = true;
 			}
@@ -437,27 +450,96 @@ public class Graph {
 	
 
 	
-	public Team[] greedyCliques(Team[] allTeams) {
-		Team[] tempTeams = helper.generateTeamArray(numTeams, cliqueSize);
+	public Team[] greedyCliques(Team[] allTeams, ResultScorer scorer, PersonProfile[] profiles) {
 		Team[] finalTeams = helper.generateTeamArray(numTeams, cliqueSize);
 		boolean[] peepsUsed = new boolean[numNodes];
+		boolean[] dontNeed = new boolean[allTeams.length];
 		int teamNum = 0;
 		boolean teamsDone = false;
+		
+		double tempScore;
 		
 		double closestMatch;
 		int teamPick;
 		
+		ResultScorer.TeamSetScore tempScorer;
+		
 		//True brute force: keep the finalTeams together; have a list with corresponding 
 		while(!teamsDone) {
-			closestMatch = 0.0;
+			closestMatch = 100;
 			teamPick = -1;
+			System.out.printf("Currently on team: %d\n", teamNum);
 			
+			//Loop through every team
+			for(int i = 0; i < allTeams.length; i++) {
+				if(!dontNeed[i]) { //Make sure that we need the team still
+					if (closestMatch > Math.abs(avgScore - allTeams[i].score.skillPointTotal)) {
+						closestMatch = Math.abs(avgScore - allTeams[i].score.skillPointTotal);
+						teamPick = i;
+					}
+				}
+			}
+			if(teamPick > -1) {
+				finalTeams[teamNum] = allTeams[teamPick];
+				teamNum++;
+				for(int j : allTeams[teamPick].memberIds) {
+					peepsUsed[j] = true;
+				}
+				if (teamNum == numTeams) {
+					teamsDone = true;
+				}
+				else {
+					for (int j = 0; j < allTeams.length; j++) {
+						if(!dontNeed[j]) {
+							for(int x : allTeams[j].memberIds) {
+								if (peepsUsed[x]) {
+									dontNeed[j] = true;
+								}
+							}
+						}
+					}
+				}
+			}
+			else {
+				System.out.println("Issue detected in greedyCliques.");
+			}
 			
+		}
+		double bestCurrFit;
+		double tempFit;
+		int teamAddition;
+		//Add the additional members to the teams that fit best
+		if(numTeams*cliqueSize != numNodes) {
+			for(int i = 0; i < peepsUsed.length; i++) {
+				bestCurrFit = 0.0;
+				teamAddition = -1;
+				if(!peepsUsed[i]) {
+					for(int j = 0; j < finalTeams.length; j++) { //Find the best team
+						tempFit = getFit(finalTeams[j], i);
+						if (tempFit > bestCurrFit) {
+							bestCurrFit = tempFit;
+							teamAddition = j;
+						}
+					}
+					finalTeams[teamAddition].increaseSize(1);
+					finalTeams[teamAddition].memberIds[cliqueSize] = i;
+				}
+			}
 		}
 		//boolean list. 1 = in use; 0 elsewhere
 		
-		return tempTeams;
+		return finalTeams;
 		
+	}
+	
+	public double getFit(Team team, int person) {
+		double fit = 1.0;
+		
+		for (int i : team.memberIds) {
+			fit = fit *adjacency[person][i];
+		}
+		
+		return fit;
 	}
 
 	public int[] highestEdge(double[][] adjacency) {
