@@ -31,7 +31,7 @@ public class CSVReader {
 
             // Read the remaining lines
             String line = "";
-            for (int id = 1; (line = br.readLine()) != null; ++id) {
+            for (int id = 0; (line = br.readLine()) != null; ++id) {
                 String[] cells = line.split(FIELD_DELIMITER);
 
                 if (cells.length > 0 ) {
