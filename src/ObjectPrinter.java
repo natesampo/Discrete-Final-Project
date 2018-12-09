@@ -18,6 +18,9 @@ public class ObjectPrinter {
         appendDouble(sb, score.totalSkillMax - score.totalSkillMin);
         sb.append("\tPoints by skill total SD: ");
         appendArray(sb, score.pointsBySkillSD);
+        sb.append('\t');
+        sb.append("Total SD: ");
+        appendDouble(sb, score.pointsSD);
 
         System.out.println(sb.toString());
     }
@@ -66,6 +69,8 @@ public class ObjectPrinter {
 
         sb.append("Mean skill points: ");
         appendDouble(sb, t.score.meanSkillRating);
+
+        
 
         System.out.println(sb.toString());
     }

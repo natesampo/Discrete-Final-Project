@@ -181,6 +181,22 @@ public class Helper {
 		return res;
 	}
 	
+	public double averageSkillTotal(PersonProfile[] profiles) {
+		double totSum = 0.0;
+		int numSkills = profiles[0].skills.length;
+		int numPeople = profiles.length;
+		double avg = 0.0;
+		
+		for (PersonProfile peep : profiles) {
+			for (int i = 0; i <numSkills; i++) {
+				totSum += peep.skills[i];
+			}
+		}
+		avg = totSum/(numPeople);
+		
+		return avg;
+	}
+	
 	public static double[] arrayElementWiseSD(double[] a1, double[] a2) {
 		double[] res = new double[a1.length];
 		double sum, standardDeviation;

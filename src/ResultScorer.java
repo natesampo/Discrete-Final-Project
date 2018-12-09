@@ -19,14 +19,17 @@ public class ResultScorer {
         score.totalSkillMin = score.teamScores[0].skillPointTotal; // Initialize this to the first team's total
         int numSkills = teams[0].score.pointsBySkillSum.length;
         double[][] skillPointTotals = new double[teams.length][numSkills];
+        double[] skillTotals = new double[teams.length];
         for (int i = 0; i < teams.length; ++i) {
             TeamScore teamScore = score.teamScores[i];
+            skillTotals[i] = teamScore.skillPointTotal;
             score.totalSkillMin = Math.min(score.totalSkillMin, teamScore.skillPointTotal);
             score.totalSkillMax = Math.max(score.totalSkillMax, teamScore.skillPointTotal);
             System.arraycopy(teamScore.pointsBySkillSum, 0, skillPointTotals[i], 0, teamScore.pointsBySkillSum.length);
         }
         // Finish calculating skill point total SD
         score.pointsBySkillSD = computeStandardDevs(skillPointTotals);
+        score.pointsSD = computeStandardDev(skillTotals);
 
         // TODO: Calculate preference meeting percentage
 
@@ -45,8 +48,10 @@ public class ResultScorer {
         HashSet<Integer> teamMembers = new HashSet<>();
         HashSet<Integer> silverBullets = new HashSet<>();
         for (int memberId : team.memberIds) {
-            teamMembers.add(memberId);
-            silverBullets.addAll(profiles[memberId].silverBullets);
+        	if(memberId < profiles.length) {
+		        teamMembers.add(memberId);
+		        silverBullets.addAll(profiles[memberId].silverBullets);
+        	}
         }
         teamMembers.removeAll(silverBullets);
         // If a member was removed because they were listed as a silver bullet, then
@@ -180,6 +185,8 @@ public class ResultScorer {
         public double totalSkillSD;
         public double totalSkillMin;
         public double totalSkillMax;
+        
+        public double pointsSD;
 
         // TODO: Implement overall stats
 

@@ -19,6 +19,7 @@ public class Graph {
 	private HashSet<Integer> visitedNodes;
 	private HashSet<Integer> coloredClique;
 	private ArrayList<HashSet<Integer>> coloredCliques;
+	private double avgScore;
 
 	private ResultScorer scorer;
 
@@ -41,8 +42,15 @@ public class Graph {
 //		final PersonProfile[] profiles = helper.generateProfiles(numNodes, numSkills, maxSilverBullets, maxPreferredPartners, numProjects, projectPreferences);
 		final PersonProfile[] profiles = CSVReader.readProfiles("Teaming_Anonymized.csv");
 
+//		final PersonProfile[] profilesOld = CSVReader.readProfiles("Teaming_Anonymized.csv");
+//		final PersonProfile[] profiles = new PersonProfile[40];
+//		for(int x = 0; x < 40; x++) {
+//			profiles[x] = profilesOld[x];
+//		}
+
 		numNodes = profiles.length;
 		numTeams = (int) java.lang.Math.ceil((numNodes / cliqueSize));
+		avgScore = helper.averageSkillTotal(profiles);
 
 
 		adjacency = generateAdjacency(profiles, skillsWeight, preferenceWeight, projectWeight);
@@ -65,17 +73,18 @@ public class Graph {
 		ObjectPrinter.printTeamSetScore(score2);
 
 		System.out.println("\n\n");
-//		Team[] teamsFromAllCliques = allCliques(profiles);
-//		scorer.scoreTeams(teamsFromAllCliques, profiles);
+		Team[] teamsFromAllCliques = allCliques(profiles);
+		scorer.scoreTeams(teamsFromAllCliques, profiles);
+		Team[] bruteTeams = bruteCliques(teamsFromAllCliques, scorer, profiles);
 //		Team[] topTeams = topTeams(teamsFromAllCliques);
-//		ObjectPrinter.printTeamArray(teamsFromAllCliques);
+		ObjectPrinter.printTeamArray(bruteTeams);
+		System.out.println("we good.");
 		
 		//getColoredCliques();
 	}
 
 	// Start of recursive colored clique finding
-	public void getColoredCliques() {
-		
+	public void getColoredCliques() {		
 		// O(n^2) time complexity
 		final double minWeight = 0.99;
 
@@ -245,33 +254,210 @@ public class Graph {
 	}
 	
 	//Brute force method! It makes me criiiiiiiiiiii
-	public Team[] topTeams(Team[] allTeams) {
+	//Et tu brute
+	public Team[] bruteCliques(Team[] allTeams, ResultScorer scorer, PersonProfile[] profiles) {
+
+		Team[] finalTeams = helper.generateTeamArray(numTeams, cliqueSize);
+		boolean[] peepsUsed = new boolean[numNodes];
+		
+		Team[] newTeam = helper.generateTeamArray(0, cliqueSize);
+
+		finalTeams = recursiveSolnV2(newTeam, allTeams, peepsUsed, scorer,profiles);
+		//boolean list. 1 = in use; 0 elsewhere
+		
+		return finalTeams;
+		
+	}
+	
+	//membersUsed of True means it's used
+	public Team[] recursiveSoln(Team[] currTeam, Team[] allTeams, int maxUsed, boolean[] membersUsed, ResultScorer scorer, PersonProfile[] profiles) {
+		Team[] tempTeam = helper.generateTeamArray(numTeams, cliqueSize);
+		Team[] finTeam = helper.generateTeamArray(numTeams, cliqueSize);
+		double score = 0.0;
+		ResultScorer.TeamSetScore tempScorer;
+		
+		Team[] newCurrTeam = helper.generateTeamArray(currTeam.length + 1, cliqueSize);
+		
+		for(int x = 0; x < currTeam.length; x++) {
+			newCurrTeam[x] = currTeam[x];
+		}
+		
+		if(currTeam.length == 1) {
+			System.out.printf("Top level of: %d\n", maxUsed);
+		}
+		else if (currTeam.length == numTeams/2) {
+			System.out.println("At the halfway team mark.");
+		}
+		else if (numTeams - currTeam.length == 3) {
+			System.out.println("3 left checkin.");
+		}
+		
+		boolean finTeamGood = false;
+		
+		boolean validTeamSelect = true;
+		for(int i = maxUsed; i < allTeams.length - numTeams + currTeam.length; i++) {
+			
+			for(int j : allTeams[i].memberIds) {
+				if(membersUsed[j]) {
+					validTeamSelect = false;
+				}
+			}
+				
+			if(validTeamSelect) {
+				for(int j : allTeams[i].memberIds) {
+					membersUsed[j] = true;
+				}
+				
+				newCurrTeam[currTeam.length] = allTeams[i];
+				
+				tempTeam = recursiveSoln(newCurrTeam, allTeams, i, membersUsed, scorer, profiles);
+				
+				if(finTeamGood) { //If we have a final Team
+					tempScorer = scorer.scoreTeams(tempTeam, profiles);
+					
+					if(tempScorer.pointsSD < score) {
+						finTeam = tempTeam;
+						score = tempScorer.pointsSD;
+					}
+				}
+				else { 	//If we don't
+					finTeam = tempTeam;
+					tempScorer = scorer.scoreTeams(tempTeam, profiles);
+					score = tempScorer.pointsSD;
+					finTeamGood = true;
+				}
+
+				
+				for(int j : allTeams[i].memberIds) {
+					membersUsed[j] = false;
+				}
+			}
+			validTeamSelect = true;
+		}
+		
+		return finTeam;
+	}
+	
+	public Team[] recursiveSolnV2(Team[] currTeam, Team[] allTeams, boolean[] membersUsed, ResultScorer scorer, PersonProfile[] profiles) {
+		if(currTeam.length == numTeams) {
+//			System.out.println("We returned something!");
+			return currTeam;
+			
+		}
+		Team[] tempTeam = helper.generateTeamArray(numTeams, cliqueSize);
+		Team[] finTeam = helper.generateTeamArray(numTeams, cliqueSize);
+		
+		double score = 0.0;
+		ResultScorer.TeamSetScore tempScorer;
+		int newAllTeamLen = 0;
+		int[] goodTeams = new int[allTeams.length];
+		
+		//Start generating the old team
+		Team[] newCurrTeam = helper.generateTeamArray(currTeam.length + 1, cliqueSize);
+		
+		//Copy over the old team
+		for(int x = 0; x < currTeam.length; x++) {
+			newCurrTeam[x] = currTeam[x];
+		}
+		
+		//Depth checking print statements
+		if(currTeam.length == 1) {
+			System.out.printf("Top level of: %d\n", currTeam.length);
+		}
+		else if (currTeam.length == numTeams/2) {
+			System.out.println("At the halfway team mark.");
+		}
+		else if (numTeams - currTeam.length == 3) {
+			System.out.println("3 left checkin.");
+		}
+		else if (numTeams - currTeam.length == 2) {
+			System.out.println("2 left checkin.");
+		}
+		else if (numTeams - currTeam.length == 1) {
+			System.out.println("1 left checkin.");
+		}
+		
+		boolean finTeamGood = false;
+		
+		boolean keepTeam;
+		
+		for(int i = 0; i < allTeams.length - numTeams + currTeam.length; i++) {
+			//Update the newCurrTeam and corresponding membersUsed
+			newCurrTeam[currTeam.length] = allTeams[i]; 
+			for(int j : allTeams[i].memberIds) {
+				membersUsed[j] = true;
+			}
+			
+			//Get all of the good teams in the allTeams
+			for(int k = 1; k < allTeams.length; k++) {
+				keepTeam = true;
+				for(int j : allTeams[k].memberIds) {
+					if(membersUsed[j]) {
+						keepTeam = false;
+					}
+				}
+				if(keepTeam) {
+					goodTeams[newAllTeamLen] = k;
+					newAllTeamLen++;
+				}
+			}
+			
+			//Generate the new team list
+			Team[] newAllTeams = helper.generateTeamArray(newAllTeamLen, cliqueSize);
+			//Copy the good teams over
+			for(int k = 0; k < newAllTeamLen; k++) {
+				newAllTeams[k] = allTeams[goodTeams[k]];
+			}
+			
+			//Recursive bit
+			tempTeam = recursiveSolnV2(newCurrTeam, newAllTeams, membersUsed, scorer, profiles);
+			
+			if(finTeamGood) { //If we have a final Team that's better
+				tempScorer = scorer.scoreTeams(tempTeam, profiles);
+//				System.out.println("We're comparing something!");
+				if(tempScorer.pointsSD < score) {
+					finTeam = tempTeam;
+					score = tempScorer.pointsSD;
+				}
+			}
+			else { 	//If we don't
+				finTeam = tempTeam;
+				tempScorer = scorer.scoreTeams(tempTeam, profiles);
+				score = tempScorer.pointsSD;
+				finTeamGood = true;
+			}
+			
+			for(int j : allTeams[i].memberIds) { //reset which locs are used
+				membersUsed[j] = false;
+			}
+		}
+		
+		return finTeam;
+	}
+	
+
+	
+	public Team[] greedyCliques(Team[] allTeams) {
 		Team[] tempTeams = helper.generateTeamArray(numTeams, cliqueSize);
 		Team[] finalTeams = helper.generateTeamArray(numTeams, cliqueSize);
 		boolean[] peepsUsed = new boolean[numNodes];
-		int maxTeam = 0;
+		int teamNum = 0;
+		boolean teamsDone = false;
+		
+		double closestMatch;
+		int teamPick;
 		
 		//True brute force: keep the finalTeams together; have a list with corresponding 
-		for (int teamOne = 0; teamOne < allTeams.length - cliqueSize; teamOne++) {
-			for (int teamTwo = teamOne + 1; teamTwo < allTeams.length - cliqueSize + 1; teamTwo++) {
-				for (int teamThree = teamTwo + 1; teamThree < allTeams.length - cliqueSize + 2; teamThree++) {
-					
-				}
-			}
+		while(!teamsDone) {
+			closestMatch = 0.0;
+			teamPick = -1;
+			
+			
 		}
 		//boolean list. 1 = in use; 0 elsewhere
 		
 		return tempTeams;
 		
-	}
-	
-	
-	public double[][] allCliqueParser(double[][] allTeams) {
-		double[][] finalTeams = new double[numTeams][cliqueSize+1]; 
-		//Sort the cliques?
-		//Take hte top ones until we're good?
-		//Take a parameter that skips a number of the top ones
-		return finalTeams;
 	}
 
 	public int[] highestEdge(double[][] adjacency) {
