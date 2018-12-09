@@ -157,56 +157,6 @@ public class Graph {
 		return proposedTeams;
 	}
 	
-	/*public double[][] getScores(double[][] finalTeams, int numSkipped) {
-		//Calculate scores 
-		//Edits the final teams input into the scores
-		//Uses the graph's innate adjacency matrix.
-		double tempScore;
-		int col;
-		int row;
-		boolean badTeamingExperience;
-		boolean printFailure = false;
-		int numDeep = 10;
-		for (int teamNum = 0; teamNum < finalTeams.length; teamNum++) {
-			tempScore = 1.0; 
-			badTeamingExperience = false;
-			for (int memNum = 0; memNum < cliqueSize; memNum++) {
-				for(int otherMem = memNum + 1; otherMem < cliqueSize; otherMem++) {
-					col = (int) finalTeams[teamNum][memNum];
-					row = (int) finalTeams[teamNum][otherMem];
-					if (row <0 || col < 0) {
-						System.out.println("INVALID TEAM.");
-						badTeamingExperience = true;
-						break;
-					}
-					else {
-						tempScore = tempScore*adjacency[col][row];
-					}
-				}
-				if(badTeamingExperience) {
-					break;
-				}
-			}
-			if(badTeamingExperience) {
-				finalTeams[teamNum][cliqueSize] = -1;
-				if (numSkipped < numDeep && numSkipped >= 0) {//Arbitrary cutoff for how deep 
-					return greedyV2(numSkipped + 1);
-				}
-				else {
-					printFailure = true;
-				}
-			}
-			else {
-				finalTeams[teamNum][cliqueSize] = tempScore;
-			}
-		}
-		if(printFailure && numSkipped >= 0) {
-			String output = String.format("We went %d deep but still failed.", numDeep);
-			System.out.println(output);
-		}
-		return finalTeams;
-	}*/
-	
 
 	public Team[] greedyV2(int numToSkip){
 		//Difference between greedy and greedy v2: Greedy v2 skips the top (numToSkip) edges when picking the next edge to start a clique with
@@ -331,7 +281,7 @@ public class Graph {
 		 * output: locs (int[2]) -- locations of nodes whose edge is highest. 
 		 */
 		int[] locs = new int[2];
-		double currHigh = -1;
+		double currHigh = 0.0;
 		
 		for(int i = 0; i < adjacency.length; i ++) {
 			for (int j = 0; j < adjacency[0].length; j++) {
@@ -409,7 +359,7 @@ public class Graph {
 			tempVal = 1.0;
 			for (int j = 0; j < neighbors.length; j++) { //check how they fit with each other group member
 				//  Make sure that x isn't a neighbor; make sure there is a neighbor in the slot being looked at; make sure there is a valid connection
-				if (!helper.searchArray(neighbors, x) && neighbors[j] != -1 && adjacency[x][neighbors[j]] >= 0) {//j isn't in neighbors{
+				if (!helper.searchArray(neighbors, x) && neighbors[j] != -1 && adjacency[x][neighbors[j]] > 0) {//j isn't in neighbors{
 					tempVal = tempVal * adjacency[x][neighbors[j]];
 				}
 				else {
@@ -423,7 +373,14 @@ public class Graph {
 			}
 		}
 		
-		return loc;
+		if(currHigh > 0.0) {
+			return loc;
+		}
+		else {
+			System.out.println("Impossible!");
+			return loc;
+		}
+		
 	
 	}
 	
