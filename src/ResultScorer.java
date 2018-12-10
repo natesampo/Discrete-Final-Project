@@ -1,4 +1,6 @@
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.DoubleStream;
 
 public class ResultScorer {
@@ -124,6 +126,22 @@ public class ResultScorer {
         // Determine the average skill rating for all members across all skills
         score.meanSkillRating = score.skillPointTotal / (numMembers * numSkills);
 
+        // Determine what percentage of team member preference requests were met
+        int totalRequests = 0;
+        int totalMet = 0;
+        HashSet<Integer> teamMemberIdsSet = new HashSet<>();
+        for (int memberId : team.memberIds)
+            teamMemberIdsSet.add(memberId);
+
+        for (int memberId : team.memberIds) {
+            HashSet<Integer> preferredPartners = new HashSet<>(profiles[memberId].preferredProjects);
+            totalRequests += preferredPartners.size();
+            // Remove IDs not in team member set
+            preferredPartners.retainAll(teamMemberIdsSet);
+            totalMet += preferredPartners.size();
+        }
+        score.partnerPreferenceMetPercentage = (double)totalMet / (double)totalRequests;
+
         team.score = score;
         return score;
     }
@@ -218,6 +236,9 @@ public class ResultScorer {
 
         // The average (mean) rating across all skills and across all team members
         public double meanSkillRating;
+
+        // The percentage of partner requests that were met
+        public double partnerPreferenceMetPercentage;
 
     }
 

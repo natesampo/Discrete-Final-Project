@@ -69,8 +69,11 @@ public class ObjectPrinter {
 
         sb.append("Mean skill points: ");
         appendDouble(sb, t.score.meanSkillRating);
+        sb.append('\t');
 
-        
+        sb.append("Partner preferences met: ");
+        appendDouble(sb, t.score.partnerPreferenceMetPercentage / 100);
+        sb.append("%");
 
         System.out.println(sb.toString());
     }
