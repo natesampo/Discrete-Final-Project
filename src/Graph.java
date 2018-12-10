@@ -42,7 +42,7 @@ public class Graph {
 		helper = new Helper();
 		
 //		final PersonProfile[] profiles = helper.generateProfiles(numNodes, numSkills, maxSilverBullets, maxPreferredPartners, numProjects, projectPreferences);
-		final PersonProfile[] profiles = CSVReader.readProfiles("Teaming_Anonymized.csv");
+		final PersonProfile[] profiles = CSVReader.readProfiles("C:\\Users\\N4tticus\\Desktop\\Teaming_Anonymized.csv");
 
 //		final PersonProfile[] profilesOld = CSVReader.readProfiles("Teaming_Anonymized.csv");
 //		final PersonProfile[] profiles = new PersonProfile[40];
@@ -69,12 +69,12 @@ public class Graph {
 		System.out.println("Result of colored graph:");
 		ObjectPrinter.printTeamSetScore(score1);
 		System.out.println("\n\n");
-		Team[] teamsFromGreedy1 = greedyCliques();
+		Team[] teamsFromGreedy1 = greedyCliques(profiles);
 		ResultScorer.TeamSetScore score2 = scorer.scoreTeams(teamsFromGreedy1, profiles);
 		System.out.println("Result of first greedy implementation:");
 		ObjectPrinter.printTeamSetScore(score2);
 		System.out.println("\n\n");
-		Team[] teamsFromGreedy2 = greedyV2(0);
+		Team[] teamsFromGreedy2 = greedyV2(0, profiles);
 		ResultScorer.TeamSetScore score3 = scorer.scoreTeams(teamsFromGreedy2, profiles);
 		System.out.println("Result of second greedy implementation:");
 		ObjectPrinter.printTeamSetScore(score3);
@@ -98,11 +98,13 @@ public class Graph {
 	}
 
 	//Returns a matrix with rows showing different teams with the first column being a score out of 100
-	public Team[] greedyCliques(){
+	public Team[] greedyCliques(PersonProfile[] profiles){
 		double[][] editableAdjacency = helper.arrayCopy(adjacency);
 		int[] newAdditions = new int[2];
 		int newNeighbor;
 		Team[] proposedTeams = helper.generateTeamArray(numTeams, cliqueSize);
+		boolean[] peepsUsed = new boolean[numNodes];
+
 		
 		for (int teamNum = 0; teamNum < numTeams; teamNum++) {
 			for (int memNum = 0; memNum < cliqueSize; memNum++) {
@@ -110,11 +112,14 @@ public class Graph {
 					newAdditions = highestEdge(editableAdjacency);
 					proposedTeams[teamNum].memberIds[0] = newAdditions[0];
 					proposedTeams[teamNum].memberIds[1] = newAdditions[1];
+					peepsUsed[newAdditions[1]] = true;
+					peepsUsed[newAdditions[0]] = true;
 					memNum++;
 				}
 				else { //If we want to find the node that best fits with our current nodes
 					newNeighbor = highestNode(editableAdjacency, Arrays.copyOfRange(proposedTeams[teamNum].memberIds, 0, memNum));
 					proposedTeams[teamNum].memberIds[memNum] = newNeighbor;
+					peepsUsed[newNeighbor] = true;
 				}
 			}
 			for (int rowCol = 0; rowCol < adjacency.length; rowCol++) {
@@ -126,16 +131,20 @@ public class Graph {
 				}
 			}
 		}
+		if(numTeams*cliqueSize != numNodes) {
+			proposedTeams = addExtras(proposedTeams, profiles, peepsUsed);
+		}
 		
 		return proposedTeams;
 	}
 	
 
-	public Team[] greedyV2(int numToSkip){
+	public Team[] greedyV2(int numToSkip, PersonProfile[] profiles){
 		//Difference between greedy and greedy v2: Greedy v2 skips the top (numToSkip) edges when picking the next edge to start a clique with
 		double[][] editableAdjacency = helper.arrayCopy(adjacency);
 		int[] newAdditions = new int[2];
 		int newNeighbor;
+		boolean[] peepsUsed = new boolean[numNodes];
 		Team[] proposedTeams = helper.generateTeamArray(numTeams, cliqueSize);
 		//Iterating through the teams
 		for (int teamNum = 0; teamNum < numTeams; teamNum++) {
@@ -145,11 +154,14 @@ public class Graph {
 					newAdditions = highestEdgeV2(editableAdjacency, numToSkip);
 					proposedTeams[teamNum].memberIds[1] = newAdditions[1];
 					proposedTeams[teamNum].memberIds[0] = newAdditions[0];
+					peepsUsed[newAdditions[1]] = true;
+					peepsUsed[newAdditions[0]] = true;
 					memNum++;
 				}
 				else { //If we want to find the node that best fits with our current nodes
 					newNeighbor = highestNode(editableAdjacency, Arrays.copyOfRange(proposedTeams[teamNum].memberIds, 0, memNum));
 					proposedTeams[teamNum].memberIds[memNum] = newNeighbor;
+					peepsUsed[newNeighbor] = true;
 				}
 			}
 			//Set values to -1 to not be confused in the future.
@@ -161,6 +173,9 @@ public class Graph {
 					}
 				}
 			}
+		}
+		if(numTeams*cliqueSize != numNodes) {
+			proposedTeams = addExtras(proposedTeams, profiles, peepsUsed);
 		}
 		return proposedTeams;
 	}
@@ -405,6 +420,8 @@ public class Graph {
 		int[] profileMajors = new int[profiles.length];
 		double[][] editableAdjacency = helper.arrayCopy(adjacency);
 		int[] edges = new int[2];
+		int leftovers = profiles.length;
+		HashSet<Integer> completeTeams = new HashSet<Integer>();
 		
 		// Assign every person a major based on their skills
 		// This major will be the 'color' of their node
@@ -432,6 +449,7 @@ public class Graph {
 					edges = highestEdge(editableAdjacency);
 					teams[i].memberIds[0] = edges[0];
 					teams[i].memberIds[1] = edges[1];
+					leftovers -= 2;
 					j++;
 					
 					// Reduce the likelihood of choosing another teammate with that major
@@ -448,6 +466,7 @@ public class Graph {
 					
 					// Otherwise, add members to an existing team
 					teams[i].memberIds[j] = highestNode(editableAdjacency, Arrays.copyOfRange(teams[i].memberIds, 0, j));
+					leftovers--;
 				}
 			}
 			
@@ -459,6 +478,23 @@ public class Graph {
 					}
 				}
 			}
+		}
+		
+		// Add any leftover people (basically create the teams of 5
+		for (int j=profiles.length-leftovers-1; j<profiles.length; j++) {
+			int minTeamIndex = 0;
+			double minTeam = 100;
+			for (int k=0; k<teams.length; k++) {
+				double tempScore = scorer.scoreTeam(teams[k], profiles).skillPointTotal;
+				if (!completeTeams.contains(k) && tempScore < minTeam) {
+					minTeam = tempScore;
+					minTeamIndex = k;
+				}
+			}
+			
+			teams[minTeamIndex].increaseSize(1);
+			teams[minTeamIndex].memberIds[cliqueSize] = j;
+			completeTeams.add(minTeamIndex);
 		}
 		
 		return teams;
@@ -531,38 +567,42 @@ public class Graph {
 				}
 			}
 			else {
-				//Todo: implement backtracking system
+				//TODO: implement backtracking system
 				System.out.println("Issue detected in greedyCliques.");
 				break;
 			}
 			
 		}
 		
-		//Some more declaration
-		double bestCurrFit;
-		double tempFit;
-		int teamAddition;
-		
 		//Handle overflow members (numPeeps % cliqueSize)
 		//Add the additional members to the teams that best fit them
 		if(numTeams*cliqueSize != numNodes) {
-			for(int i = 0; i < peepsUsed.length; i++) {
-				bestCurrFit = 0.0;
-				teamAddition = -1;
-				if(!peepsUsed[i]) {
-					for(int j = 0; j < finalTeams.length; j++) { //Find the best team
-						tempFit = getFit(finalTeams[j], i);
-						if (tempFit > bestCurrFit && finalTeams[j].memberIds.length == cliqueSize) { //Determine if the team being looked at is better and is at the clique size
-							bestCurrFit = tempFit;
-							teamAddition = j;
-						}
-					}
-					//Add the team
-					finalTeams[teamAddition].increaseSize(1);
-					finalTeams[teamAddition].memberIds[cliqueSize] = i;
-				}
-			}
+			allTeams = addExtras(finalTeams, profiles, peepsUsed);
+			
 		}		
+		return finalTeams;
+	}
+	
+	public Team[] addExtras(Team[] finalTeams, PersonProfile[] profiles, boolean[] peepsUsed) {
+		double bestCurrFit;
+		double tempFit;
+		int teamAddition;
+		for(int i = 0; i < peepsUsed.length; i++) {
+			bestCurrFit = 0.0;
+			teamAddition = -1;
+			if(!peepsUsed[i]) {
+				for(int j = 0; j < finalTeams.length; j++) { //Find the best team
+					tempFit = getFit(finalTeams[j], i);
+					if (tempFit > bestCurrFit && finalTeams[j].memberIds.length == cliqueSize) { //Determine if the team being looked at is better and is at the clique size
+						bestCurrFit = tempFit;
+						teamAddition = j;
+					}
+				}
+				//Add the team
+				finalTeams[teamAddition].increaseSize(1);
+				finalTeams[teamAddition].memberIds[cliqueSize] = i;
+			}
+		}
 		return finalTeams;
 	}
 	
@@ -708,11 +748,14 @@ public class Graph {
 		Team[] teams = helper.generateTeamArray(numTeams, cliqueSize);
 		HashSet<Integer> missingTeams = new HashSet<Integer>();
 		ArrayList<Integer> missingPeople = new ArrayList<Integer>();
+		int leftovers = profiles.length;
+		HashSet<Integer> completeTeams = new HashSet<Integer>();
 		
 		// Go through and add every person to a team sequentially
 		for (int i=0; i<numTeams; i++) {
 			for (int j=0; j<cliqueSize; j++) {
 				teams[i].memberIds[j] = profiles[cliqueSize*i + j].id;
+				leftovers--;
 			}
 		}
 
@@ -794,6 +837,28 @@ public class Graph {
 			}
 			
 			i++;
+		}
+		
+		// Add any leftover people (basically create the teams of 5)
+		for (int j=profiles.length-leftovers-1; j<profiles.length; j++) {
+			for (int k=0; k<teams.length; k++) {
+				if (!completeTeams.contains(k)) {
+					boolean valid = true;
+					
+					for (int l=0; l<teams[k].memberIds.length; l++) {
+						if (profiles[teams[k].memberIds[l]].silverBullets.contains(j)) {
+							valid = false;
+						}
+					}
+					
+					if (valid) {
+						teams[k].increaseSize(1);
+						teams[k].memberIds[cliqueSize] = j;
+						completeTeams.add(k);
+						break;
+					}
+				}
+			}
 		}
 		
 		return teams;
