@@ -137,7 +137,6 @@ public class Graph {
 				teams[i].memberIds[j] = profiles[4*i + j].id;
 			}
 		}
-		
 		return teams;
 	}
 
@@ -177,13 +176,13 @@ public class Graph {
 
 	public Team[] greedyV2(int numToSkip){
 		//Difference between greedy and greedy v2: Greedy v2 skips the top (numToSkip) edges when picking the next edge to start a clique with
-		
 		double[][] editableAdjacency = helper.arrayCopy(adjacency);
 		int[] newAdditions = new int[2];
 		int newNeighbor;
 		Team[] proposedTeams = helper.generateTeamArray(numTeams, cliqueSize);
-		
+		//Iterating through the teams
 		for (int teamNum = 0; teamNum < numTeams; teamNum++) {
+			//Try to form a team
 			for (int memNum = 0; memNum < cliqueSize; memNum++) {
 				if(memNum == 0) { //If we need to find the highest edge (starting a new team)
 					newAdditions = highestEdgeV2(editableAdjacency, numToSkip);
@@ -196,6 +195,7 @@ public class Graph {
 					proposedTeams[teamNum].memberIds[memNum] = newNeighbor;
 				}
 			}
+			//Set values to -1 to not be confused in the future.
 			for (int rowCol = 0; rowCol < adjacency.length; rowCol++) {
 				for (int currMem = 0; currMem < cliqueSize; currMem++) { //Edit the editableadjacency to make sure we don't select 
 					if(proposedTeams[teamNum].memberIds[currMem] >= 0) {
@@ -205,7 +205,6 @@ public class Graph {
 				}
 			}
 		}
-		
 		return proposedTeams;
 	}
 	
@@ -261,8 +260,7 @@ public class Graph {
 		return finalTeams;
 	}
 	
-	//Brute force method! It makes me criiiiiiiiiiii
-	//Et tu brute
+	//The leader into the brute force solution. To be updated so it uses the first 15 or so from the greedy clique algorithm.
 	public Team[] bruteCliques(Team[] allTeams, ResultScorer scorer, PersonProfile[] profiles) {
 
 		Team[] finalTeams = helper.generateTeamArray(numTeams, cliqueSize);
@@ -271,19 +269,14 @@ public class Graph {
 		Team[] newTeam = helper.generateTeamArray(0, cliqueSize);
 
 		finalTeams = recursiveSolnV2(newTeam, allTeams, peepsUsed, scorer,profiles);
-		//boolean list. 1 = in use; 0 elsewhere
 		
 		return finalTeams;
 		
 	}
 	
-	public Team[] greedyBruteClique() {
-		Team[] tempTeam = helper.generateTeamArray(numTeams, cliqueSize);
-		return tempTeam;
-	}
-	
 	//membersUsed of True means it's used
 	public Team[] recursiveSoln(Team[] currTeam, Team[] allTeams, int maxUsed, boolean[] membersUsed, ResultScorer scorer, PersonProfile[] profiles) {
+		//NOTE: this takes too long to feasibly run, thus the lacking comments and it not being used.
 		Team[] tempTeam = helper.generateTeamArray(numTeams, cliqueSize);
 		Team[] finTeam = helper.generateTeamArray(numTeams, cliqueSize);
 		double score = 0.0;
@@ -352,6 +345,7 @@ public class Graph {
 	}
 	
 	public Team[] recursiveSolnV2(Team[] currTeam, Team[] allTeams, boolean[] membersUsed, ResultScorer scorer, PersonProfile[] profiles) {
+		//NOTE: this takes too long to feasibly run, thus the lacking comments and it not being used.
 		//If we have the right number of teams, return the teams
 		if(currTeam.length == numTeams) {
 //			System.out.println("We returned something!");
@@ -449,45 +443,59 @@ public class Graph {
 	}
 	
 
-	
+	//Greedy Clique algorithm, where we found the best clique and worked our way down.
 	public Team[] greedyCliques(Team[] allTeams, ResultScorer scorer, PersonProfile[] profiles) {
+		/*
+		 * allTeams: List of all cliques possible (silver bullets included)
+		 * scorer: The result Scorer being used for all tests
+		 * profiles: The list of personprofiles
+		 * return value: Team[], showing all teams
+		 */
+		//Variable instantiation
 		Team[] finalTeams = helper.generateTeamArray(numTeams, cliqueSize);
 		boolean[] peepsUsed = new boolean[numNodes];
 		boolean[] dontNeed = new boolean[allTeams.length];
 		int teamNum = 0;
 		boolean teamsDone = false;
 		
+		//variables whose initial value isn't needed
 		double tempScore;
-		
 		double closestMatch;
 		int teamPick;
 		
 		ResultScorer.TeamSetScore tempScorer;
 		
-		//True brute force: keep the finalTeams together; have a list with corresponding 
+		//True until we have all teams created 
 		while(!teamsDone) {
 			closestMatch = 100;
 			teamPick = -1;
-			System.out.printf("Currently on team: %d\n", teamNum);
+//			System.out.printf("Currently on team: %d\n", teamNum);
 			
 			//Loop through every team
 			for(int i = 0; i < allTeams.length; i++) {
 				if(!dontNeed[i]) { //Make sure that we need the team still
-					if (closestMatch > Math.abs(avgScore - allTeams[i].score.skillPointTotal)) {
+					if (closestMatch > Math.abs(avgScore - allTeams[i].score.skillPointTotal)) { //Check to see if they're the closest to the average. If so, save them
 						closestMatch = Math.abs(avgScore - allTeams[i].score.skillPointTotal);
 						teamPick = i;
 					}
 				}
 			}
+			
+			//If we have a valid team we can pick
 			if(teamPick > -1) {
+				//Save the team
 				finalTeams[teamNum] = allTeams[teamPick];
 				teamNum++;
+				
+				//Note that the people are being used
 				for(int j : allTeams[teamPick].memberIds) {
 					peepsUsed[j] = true;
 				}
+				//If there are enough teams, exit
 				if (teamNum == numTeams) {
 					teamsDone = true;
 				}
+				//Otherwise, update which teams we don't need (if they include one of the ids of the used team, ignore).
 				else {
 					for (int j = 0; j < allTeams.length; j++) {
 						if(!dontNeed[j]) {
@@ -501,14 +509,20 @@ public class Graph {
 				}
 			}
 			else {
+				//Todo: implement backtracking system
 				System.out.println("Issue detected in greedyCliques.");
+				break;
 			}
 			
 		}
+		
+		//Some more declaration
 		double bestCurrFit;
 		double tempFit;
 		int teamAddition;
-		//Add the additional members to the teams that fit best
+		
+		//Handle overflow members (numPeeps % cliqueSize)
+		//Add the additional members to the teams that best fit them
 		if(numTeams*cliqueSize != numNodes) {
 			for(int i = 0; i < peepsUsed.length; i++) {
 				bestCurrFit = 0.0;
@@ -516,29 +530,31 @@ public class Graph {
 				if(!peepsUsed[i]) {
 					for(int j = 0; j < finalTeams.length; j++) { //Find the best team
 						tempFit = getFit(finalTeams[j], i);
-						if (tempFit > bestCurrFit) {
+						if (tempFit > bestCurrFit && finalTeams[j].memberIds.length == cliqueSize) { //Determine if the team being looked at is better and is at the clique size
 							bestCurrFit = tempFit;
 							teamAddition = j;
 						}
 					}
+					//Add the team
 					finalTeams[teamAddition].increaseSize(1);
 					finalTeams[teamAddition].memberIds[cliqueSize] = i;
 				}
 			}
-		}
-		//boolean list. 1 = in use; 0 elsewhere
-		
+		}		
 		return finalTeams;
-		
 	}
 	
+	//Get the fit of a person to a team using the adjacency matrix
 	public double getFit(Team team, int person) {
+		/*
+		 * team: The team being looked at
+		 * person: the person's assigned number being added
+		 * return val: a double indicating the strength made by multiplying hte different matrix locations.
+		 */
 		double fit = 1.0;
-		
 		for (int i : team.memberIds) {
 			fit = fit *adjacency[person][i];
 		}
-		
 		return fit;
 	}
 
@@ -635,12 +651,13 @@ public class Graph {
 				}
 				
 			}
+			//If the new calculated value is higher than the old saved one
 			if (tempVal > currHigh) {
 				currHigh = tempVal;
 				loc = x; 
 			}
 		}
-		
+		//Make sure it's a valid location before returning. If it isn't, there's a print statement about it.
 		if(currHigh > 0.0) {
 			return loc;
 		}
@@ -648,11 +665,9 @@ public class Graph {
 			System.out.println("Impossible!");
 			return loc;
 		}
-		
-	
 	}
 	
-
+	//Generates the adjacency matrix from the profiles using our secret formula.
 	public double[][] generateAdjacency(PersonProfile[] profiles, double skillsWeight, double preferenceWeight, double projectWeight) {
 		double[][] adjacencyArray = new double[profiles.length][profiles.length];
 		

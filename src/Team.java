@@ -13,6 +13,7 @@ public class Team {
         return "Members: " + memberIds.toString() + ", connection strength: " + connectionStrength;
     }
     
+    //Increases the size of this team by an amount "amt"
     public void increaseSize(int amt) {
     	int[] newIds = new int[amt + this.memberIds.length];
     	for(int i = 0; i < this.memberIds.length; i++) {
