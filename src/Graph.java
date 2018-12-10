@@ -20,6 +20,7 @@ public class Graph {
 	private HashSet<Integer> coloredClique;
 	private ArrayList<HashSet<Integer>> coloredCliques;
 	private double avgScore;
+	private double colorWeight;
 
 	private ResultScorer scorer;
 
@@ -32,17 +33,16 @@ public class Graph {
 		final int numProjects = numNodes * 2;
 		final int projectPreferences = 3;
 		final double projectWeight = 0.3; // Weight per same project in preferred projects
+		colorWeight = 1.1;
 		
 		scorer = new ResultScorer();
 		
 		cliqueSize = 4;
 
 		helper = new Helper();
-
-//		BTW 51 & 54 Silver Bulleted Themselves <-- All teamings will be invalid while this is the case
 		
 //		final PersonProfile[] profiles = helper.generateProfiles(numNodes, numSkills, maxSilverBullets, maxPreferredPartners, numProjects, projectPreferences);
-		final PersonProfile[] profiles = CSVReader.readProfiles("C:\\Users\\N4tticus\\Desktop\\Teaming_Anonymized.csv");
+		final PersonProfile[] profiles = CSVReader.readProfiles("Teaming_Anonymized.csv");
 
 //		final PersonProfile[] profilesOld = CSVReader.readProfiles("Teaming_Anonymized.csv");
 //		final PersonProfile[] profiles = new PersonProfile[40];
@@ -64,15 +64,20 @@ public class Graph {
 		System.out.println("Result of random teams:");
 		ObjectPrinter.printTeamSetScore(score0);
 		System.out.println("\n\n");
-		/*Team[] teamsFromGreedy1 = greedyCliques();
-		ResultScorer.TeamSetScore score1 = scorer.scoreTeams(teamsFromGreedy1, profiles);
-		System.out.println("Result of first greedy implementation:");
+		Team[] coloredCliques = getColoredCliques(profiles);
+		ResultScorer.TeamSetScore score1 = scorer.scoreTeams(coloredCliques, profiles);
+		System.out.println("Result of colored graph:");
 		ObjectPrinter.printTeamSetScore(score1);
 		System.out.println("\n\n");
-		Team[] teamsFromGreedy2 = greedyV2(0);
-		ResultScorer.TeamSetScore score2 = scorer.scoreTeams(teamsFromGreedy2, profiles);
-		System.out.println("Result of second greedy implementation:");
+		Team[] teamsFromGreedy1 = greedyCliques();
+		ResultScorer.TeamSetScore score2 = scorer.scoreTeams(teamsFromGreedy1, profiles);
+		System.out.println("Result of first greedy implementation:");
 		ObjectPrinter.printTeamSetScore(score2);
+		System.out.println("\n\n");
+		Team[] teamsFromGreedy2 = greedyV2(0);
+		ResultScorer.TeamSetScore score3 = scorer.scoreTeams(teamsFromGreedy2, profiles);
+		System.out.println("Result of second greedy implementation:");
+		ObjectPrinter.printTeamSetScore(score3);
 
 		System.out.println("\n\n");
 		Team[] teamsFromAllCliques = allCliques(profiles);
@@ -84,50 +89,77 @@ public class Graph {
 		
 		Team[] greedyCliqueTeams = greedyCliques(teamsFromAllCliques, scorer, profiles);
 //		ObjectPrinter.printTeamArray(greedyCliqueTeams);
-		ResultScorer.TeamSetScore score3 = scorer.scoreTeams(greedyCliqueTeams, profiles);
+		ResultScorer.TeamSetScore score4 = scorer.scoreTeams(greedyCliqueTeams, profiles);
 		System.out.println("Result of runnable allClique implementation:");
-		ObjectPrinter.printTeamSetScore(score3);
+		ObjectPrinter.printTeamSetScore(score4);
 		System.out.println("we good.");
-		System.out.printf("Avgscore: %f", avgScore);*/
+		System.out.printf("Avgscore: %f", avgScore);
 //		
-		//getColoredCliques();
 	}
 
-	// Start of recursive colored clique finding
-	public void getColoredCliques() {		
-		// O(n^2) time complexity
-		final double minWeight = 0.99;
-
-		visitedNodes = new HashSet<Integer>();
-		for (int i=0; i<numNodes; i++) {
-			if (!visitedNodes.contains(i)) {
-				coloredClique = getNodeColoredClique(i, new HashSet<Integer>(), minWeight);
-				if (coloredClique.size() > 1) {
-					coloredCliques.add(coloredClique);
-					visitedNodes.addAll(coloredClique);
-					helper.hashSetArrayPrintInt(coloredCliques);
+	// Start of colored clique finding by major
+	public Team[] getColoredCliques(PersonProfile[] profiles) {
+		Team[] teams = helper.generateTeamArray(numTeams, cliqueSize);
+		int[] profileMajors = new int[profiles.length];
+		double[][] editableAdjacency = helper.arrayCopy(adjacency);
+		int[] edges = new int[2];
+		
+		// Assign every person a major based on their skills
+		// This major will be the 'color' of their node
+		for (int i=0; i<profiles.length; i++) {
+			
+			// Find the largest of their skills, assign that as their major
+			double max = 0;
+			int maxIndex = -1;
+			for (int j=0; j<profiles[i].skills.length; j++) {
+				if (profiles[i].skills[j] > max) {
+					max = profiles[i].skills[j];
+					maxIndex = j;
+				}
+			}
+			
+			profileMajors[i] = maxIndex;
+		}
+		
+		// Pretty much run greedy but take majors into consideration to form a rainbow graph
+		for (int i=0; i<numTeams; i++) {
+			for (int j=0; j<cliqueSize; j++) {
+				if(j==0) {
+					
+					// Create a new team with the current best pair if team is currently empty
+					edges = highestEdge(editableAdjacency);
+					teams[i].memberIds[0] = edges[0];
+					teams[i].memberIds[1] = edges[1];
+					j++;
+					
+					// Reduce the likelihood of choosing another teammate with that major
+					for (int k=0; k<profiles.length; k++) {
+						if (profileMajors[k] == profileMajors[edges[0]] || profileMajors[k] == profileMajors[edges[1]]) {
+							editableAdjacency[k][edges[0]] = Math.max(editableAdjacency[k][edges[0]]/colorWeight, 0.01);
+							editableAdjacency[edges[0]][k] = Math.max(editableAdjacency[edges[0]][k]/colorWeight, 0.01);
+							editableAdjacency[k][edges[1]] = Math.max(editableAdjacency[k][edges[1]]/colorWeight, 0.01);
+							editableAdjacency[edges[1]][k] = Math.max(editableAdjacency[edges[1]][k]/colorWeight, 0.01);
+						}
+					}
+				}
+				else {
+					
+					// Otherwise, add members to an existing team
+					teams[i].memberIds[j] = highestNode(editableAdjacency, Arrays.copyOfRange(teams[i].memberIds, 0, j));
+				}
+			}
+			
+			for (int j=0; j<adjacency.length; j++) {
+				for (int k=0; k<cliqueSize; k++) {
+					if (teams[i].memberIds[k] >= 0) {
+						editableAdjacency[teams[i].memberIds[k]][j] = -1;
+						editableAdjacency[k][teams[i].memberIds[k]] = -1;
+					}
 				}
 			}
 		}
-	}
-
-	// Recursive strategy of finding cliques by traveling along edges that are above minWeight
-	public HashSet<Integer> getNodeColoredClique(int node, HashSet<Integer> connected, double minWeight) {
-		// Connected is a hashset of nodes belonging to this clique, add this node to the clique
-		connected.add(node);
 		
-		// Loop through all of this node's edges and check for other nodes to add to the clique
-		for (int i=0; i<adjacency[node].length; i++) {
-			
-			// If this node is not already in the clique and the edge is above minWeight
-			if (!connected.contains(i) && adjacency[node][i] > minWeight) {
-				
-				// Travel to this node and continue to add nodes to the clique from there
-				getNodeColoredClique(i, connected, minWeight);
-			}
-		}
-		
-		return connected;
+		return teams;
 	}
 
 	//Returns a matrix with rows showing different teams with the first column being a score out of 100
@@ -776,7 +808,9 @@ public class Graph {
 	 * @return the weight of the edge from p1 to p2, where a lower score is more desirable
 	 */
 	 public double calculateEdgeWeight(PersonProfile p1, PersonProfile p2, double skillsWeight, double preferenceWeight, double projectWeight) {
-		 // Silver bullet makes weight 0.
+		 // Silver bullet makes weight 0
+		 
+		 // Check to see how many of the same preferred projects they have
 		 int sameProjects = 0;
 		 for (int element : p2.preferredProjects) {
 			 if (p1.preferredProjects.contains(element)) {
