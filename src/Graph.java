@@ -42,7 +42,7 @@ public class Graph {
 		helper = new Helper();
 		
 //		final PersonProfile[] profiles = helper.generateProfiles(numNodes, numSkills, maxSilverBullets, maxPreferredPartners, numProjects, projectPreferences);
-		final PersonProfile[] profiles = CSVReader.readProfiles("Teaming_Anonymized.csv");
+		final PersonProfile[] profiles = CSVReader.readProfiles("C:\\Users\\N4tticus\\Desktop\\Teaming_Anonymized.csv");
 
 //		final PersonProfile[] profilesOld = CSVReader.readProfiles("Teaming_Anonymized.csv");
 //		final PersonProfile[] profiles = new PersonProfile[40];
@@ -420,6 +420,8 @@ public class Graph {
 		int[] profileMajors = new int[profiles.length];
 		double[][] editableAdjacency = helper.arrayCopy(adjacency);
 		int[] edges = new int[2];
+		int leftovers = profiles.length;
+		HashSet<Integer> completeTeams = new HashSet<Integer>();
 		
 		// Assign every person a major based on their skills
 		// This major will be the 'color' of their node
@@ -447,6 +449,7 @@ public class Graph {
 					edges = highestEdge(editableAdjacency);
 					teams[i].memberIds[0] = edges[0];
 					teams[i].memberIds[1] = edges[1];
+					leftovers -= 2;
 					j++;
 					
 					// Reduce the likelihood of choosing another teammate with that major
@@ -463,6 +466,7 @@ public class Graph {
 					
 					// Otherwise, add members to an existing team
 					teams[i].memberIds[j] = highestNode(editableAdjacency, Arrays.copyOfRange(teams[i].memberIds, 0, j));
+					leftovers--;
 				}
 			}
 			
@@ -474,6 +478,23 @@ public class Graph {
 					}
 				}
 			}
+		}
+		
+		// Add any leftover people (basically create the teams of 5
+		for (int j=profiles.length-leftovers-1; j<profiles.length; j++) {
+			int minTeamIndex = 0;
+			double minTeam = 100;
+			for (int k=0; k<teams.length; k++) {
+				double tempScore = scorer.scoreTeam(teams[k], profiles).skillPointTotal;
+				if (!completeTeams.contains(k) && tempScore < minTeam) {
+					minTeam = tempScore;
+					minTeamIndex = k;
+				}
+			}
+			
+			teams[minTeamIndex].increaseSize(1);
+			teams[minTeamIndex].memberIds[cliqueSize] = j;
+			completeTeams.add(minTeamIndex);
 		}
 		
 		return teams;
@@ -727,11 +748,14 @@ public class Graph {
 		Team[] teams = helper.generateTeamArray(numTeams, cliqueSize);
 		HashSet<Integer> missingTeams = new HashSet<Integer>();
 		ArrayList<Integer> missingPeople = new ArrayList<Integer>();
+		int leftovers = profiles.length;
+		HashSet<Integer> completeTeams = new HashSet<Integer>();
 		
 		// Go through and add every person to a team sequentially
 		for (int i=0; i<numTeams; i++) {
 			for (int j=0; j<cliqueSize; j++) {
 				teams[i].memberIds[j] = profiles[cliqueSize*i + j].id;
+				leftovers--;
 			}
 		}
 
@@ -813,6 +837,28 @@ public class Graph {
 			}
 			
 			i++;
+		}
+		
+		// Add any leftover people (basically create the teams of 5)
+		for (int j=profiles.length-leftovers-1; j<profiles.length; j++) {
+			for (int k=0; k<teams.length; k++) {
+				if (!completeTeams.contains(k)) {
+					boolean valid = true;
+					
+					for (int l=0; l<teams[k].memberIds.length; l++) {
+						if (profiles[teams[k].memberIds[l]].silverBullets.contains(j)) {
+							valid = false;
+						}
+					}
+					
+					if (valid) {
+						teams[k].increaseSize(1);
+						teams[k].memberIds[cliqueSize] = j;
+						completeTeams.add(k);
+						break;
+					}
+				}
+			}
 		}
 		
 		return teams;
