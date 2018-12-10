@@ -39,6 +39,8 @@ public class Graph {
 
 		helper = new Helper();
 
+//		BTW 51 & 54 Silver Bulleted Themselves <-- All teamings will be invalid while this is the case
+		
 //		final PersonProfile[] profiles = helper.generateProfiles(numNodes, numSkills, maxSilverBullets, maxPreferredPartners, numProjects, projectPreferences);
 		final PersonProfile[] profiles = CSVReader.readProfiles("C:\\Users\\N4tticus\\Desktop\\Teaming_Anonymized.csv");
 
@@ -126,103 +128,6 @@ public class Graph {
 		}
 		
 		return connected;
-	}
-	
-	public Team[] randomTeams(PersonProfile[] profiles) {
-		// Generate random teams to test against
-		// Now keeping silver bullets in mind
-		Team[] teams = helper.generateTeamArray(numTeams, cliqueSize);
-		HashSet<Integer> missingTeams = new HashSet<Integer>();
-		ArrayList<Integer> missingPeople = new ArrayList<Integer>();
-		
-		// Go through and add every person to a team sequentially
-		for (int i=0; i<numTeams; i++) {
-			for (int j=0; j<cliqueSize; j++) {
-				teams[i].memberIds[j] = profiles[cliqueSize*i + j].id;
-			}
-		}
-		
-		
-		// Then check for silver bullets
-		for (int i=0; i<numTeams; i++) {
-			for (int j=0; j<cliqueSize; j++) {
-				for (int k=0; k<cliqueSize; k++) {
-					if (k!=j && teams[i].memberIds[j]!=-1 && teams[i].memberIds[k]!=-1 && (profiles[teams[i].memberIds[j]].silverBullets.contains(teams[i].memberIds[k]) || profiles[teams[i].memberIds[k]].silverBullets.contains(teams[i].memberIds[j]))) {
-						
-						// If we do find silver bullets, remove that person from the team and remember which team is missing a person, and which person is missing
-						missingTeams.add(i);
-						missingPeople.add(teams[i].memberIds[k]);
-						teams[i].memberIds[k] = -1;
-					}
-				}
-			}
-		}
-		
-		
-		// While there are teams missing people, continue trying to match people to teams
-		int i=0;
-		boolean leave = false;
-		while (missingTeams.size() > 0) {
-			if (!missingTeams.contains(i)) {
-				
-				// First try swapping out people in successful teams
-				int silverBulletIndex = cliqueSize-1;
-				int notSilverBulleted = 0;
-				for (int j=0; j<cliqueSize; j++) {
-					if (!profiles[teams[i].memberIds[j]].silverBullets.contains(missingPeople.get(0)) && !profiles[missingPeople.get(0)].silverBullets.contains(teams[i].memberIds[j])) {
-						notSilverBulleted++;
-					} else {
-						silverBulletIndex = j;
-					}
-					
-					if (notSilverBulleted == cliqueSize-1) {
-						int tempMissing = missingPeople.get(0);
-						missingPeople.set(0, teams[i].memberIds[silverBulletIndex]);
-						teams[i].memberIds[silverBulletIndex] = tempMissing;
-					}
-				}
-				
-				// Then try every current missing person with every current team missing people
-				for (int team : missingTeams) {
-					leave = false;
-					
-					for (int person : missingPeople) {
-						for (int j=0; j<cliqueSize; j++) {
-							if (!profiles[teams[team].memberIds[j]].silverBullets.contains(person) && !profiles[person].silverBullets.contains(teams[i].memberIds[j])) {
-								break;
-							}
-						}
-						
-						int alreadyHit = 0;
-						for (int j=0; j<cliqueSize; j++) {
-							if (teams[team].memberIds[j] == -1) {
-								if (alreadyHit == 0) {
-									teams[team].memberIds[j] = person;
-									missingPeople.remove(Integer.valueOf(person));
-								}
-								
-								alreadyHit++;
-							}
-						}
-						
-						leave = false;
-						if (alreadyHit == 1) {
-							missingTeams.remove(team);
-							leave = true;
-							break;
-						}
-					}
-					
-					if (leave) {
-						break;
-					}
-				}
-			}
-			
-			i++;
-		}
-		
-		return teams;
 	}
 
 	//Returns a matrix with rows showing different teams with the first column being a score out of 100
@@ -763,6 +668,103 @@ public class Graph {
 		}
 		
 		return adjacencyArray;
+	}
+	
+	public Team[] randomTeams(PersonProfile[] profiles) {
+		// Generate random teams to test against
+		// Now keeping silver bullets in mind
+		Team[] teams = helper.generateTeamArray(numTeams, cliqueSize);
+		HashSet<Integer> missingTeams = new HashSet<Integer>();
+		ArrayList<Integer> missingPeople = new ArrayList<Integer>();
+		
+		// Go through and add every person to a team sequentially
+		for (int i=0; i<numTeams; i++) {
+			for (int j=0; j<cliqueSize; j++) {
+				teams[i].memberIds[j] = profiles[cliqueSize*i + j].id;
+			}
+		}
+
+		
+		// Then check for silver bullets
+		for (int i=0; i<numTeams; i++) {
+			for (int j=0; j<cliqueSize; j++) {
+				for (int k=0; k<cliqueSize; k++) {
+					if (k!=j && teams[i].memberIds[j]!=-1 && teams[i].memberIds[k]!=-1 && (profiles[teams[i].memberIds[j]].silverBullets.contains(teams[i].memberIds[k]) || profiles[teams[i].memberIds[k]].silverBullets.contains(teams[i].memberIds[j]))) {
+						
+						// If we do find silver bullets, remove that person from the team and remember which team is missing a person, and which person is missing
+						missingTeams.add(i);
+						missingPeople.add(teams[i].memberIds[k]);
+						teams[i].memberIds[k] = -1;
+					}
+				}
+			}
+		}
+		
+		
+		// While there are teams missing people, continue trying to match people to teams
+		int i=0;
+		boolean leave = false;
+		while (missingTeams.size() > 0) {
+			if (!missingTeams.contains(i)) {
+				
+				// First try swapping out people in successful teams
+				int silverBulletIndex = cliqueSize-1;
+				int notSilverBulleted = 0;
+				for (int j=0; j<cliqueSize; j++) {
+					if (!profiles[teams[i].memberIds[j]].silverBullets.contains(missingPeople.get(0)) && !profiles[missingPeople.get(0)].silverBullets.contains(teams[i].memberIds[j])) {
+						notSilverBulleted++;
+					} else {
+						silverBulletIndex = j;
+					}
+					
+					if (notSilverBulleted == cliqueSize-1) {
+						int tempMissing = missingPeople.get(0);
+						missingPeople.set(0, teams[i].memberIds[silverBulletIndex]);
+						teams[i].memberIds[silverBulletIndex] = tempMissing;
+					}
+				}
+				
+				// Then try every current missing person with every current team missing people
+				for (int team : missingTeams) {
+					leave = false;
+					
+					for (int person : missingPeople) {
+						for (int j=0; j<cliqueSize; j++) {
+							if (!profiles[teams[team].memberIds[j]].silverBullets.contains(person) && !profiles[person].silverBullets.contains(teams[i].memberIds[j])) {
+								break;
+							}
+						}
+						
+						int alreadyHit = 0;
+						for (int j=0; j<cliqueSize; j++) {
+							if (teams[team].memberIds[j] == -1) {
+								if (alreadyHit == 0) {
+									teams[team].memberIds[j] = person;
+									missingPeople.remove(Integer.valueOf(person));
+								}
+								
+								alreadyHit++;
+							}
+						}
+						
+						leave = false;
+						if (alreadyHit == 1) {
+							missingTeams.remove(team);
+							leave = true;
+							break;
+						}
+					}
+					
+					if (leave) {
+						break;
+					}
+				}
+			}
+			
+			i++;
+		}
+		
+		return teams;
 	}
 	
 	/**
