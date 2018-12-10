@@ -97,71 +97,6 @@ public class Graph {
 //		
 	}
 
-	// Start of colored clique finding by major
-	public Team[] getColoredCliques(PersonProfile[] profiles) {
-		Team[] teams = helper.generateTeamArray(numTeams, cliqueSize);
-		int[] profileMajors = new int[profiles.length];
-		double[][] editableAdjacency = helper.arrayCopy(adjacency);
-		int[] edges = new int[2];
-		
-		// Assign every person a major based on their skills
-		// This major will be the 'color' of their node
-		for (int i=0; i<profiles.length; i++) {
-			
-			// Find the largest of their skills, assign that as their major
-			double max = 0;
-			int maxIndex = -1;
-			for (int j=0; j<profiles[i].skills.length; j++) {
-				if (profiles[i].skills[j] > max) {
-					max = profiles[i].skills[j];
-					maxIndex = j;
-				}
-			}
-			
-			profileMajors[i] = maxIndex;
-		}
-		
-		// Pretty much run greedy but take majors into consideration to form a rainbow graph
-		for (int i=0; i<numTeams; i++) {
-			for (int j=0; j<cliqueSize; j++) {
-				if(j==0) {
-					
-					// Create a new team with the current best pair if team is currently empty
-					edges = highestEdge(editableAdjacency);
-					teams[i].memberIds[0] = edges[0];
-					teams[i].memberIds[1] = edges[1];
-					j++;
-					
-					// Reduce the likelihood of choosing another teammate with that major
-					for (int k=0; k<profiles.length; k++) {
-						if (profileMajors[k] == profileMajors[edges[0]] || profileMajors[k] == profileMajors[edges[1]]) {
-							editableAdjacency[k][edges[0]] = Math.max(editableAdjacency[k][edges[0]]/colorWeight, 0.01);
-							editableAdjacency[edges[0]][k] = Math.max(editableAdjacency[edges[0]][k]/colorWeight, 0.01);
-							editableAdjacency[k][edges[1]] = Math.max(editableAdjacency[k][edges[1]]/colorWeight, 0.01);
-							editableAdjacency[edges[1]][k] = Math.max(editableAdjacency[edges[1]][k]/colorWeight, 0.01);
-						}
-					}
-				}
-				else {
-					
-					// Otherwise, add members to an existing team
-					teams[i].memberIds[j] = highestNode(editableAdjacency, Arrays.copyOfRange(teams[i].memberIds, 0, j));
-				}
-			}
-			
-			for (int j=0; j<adjacency.length; j++) {
-				for (int k=0; k<cliqueSize; k++) {
-					if (teams[i].memberIds[k] >= 0) {
-						editableAdjacency[teams[i].memberIds[k]][j] = -1;
-						editableAdjacency[k][teams[i].memberIds[k]] = -1;
-					}
-				}
-			}
-		}
-		
-		return teams;
-	}
-
 	//Returns a matrix with rows showing different teams with the first column being a score out of 100
 	public Team[] greedyCliques(){
 		double[][] editableAdjacency = helper.arrayCopy(adjacency);
@@ -462,6 +397,71 @@ public class Graph {
 		}
 		
 		return finTeam;
+	}
+	
+	// Start of colored clique finding by major
+	public Team[] getColoredCliques(PersonProfile[] profiles) {
+		Team[] teams = helper.generateTeamArray(numTeams, cliqueSize);
+		int[] profileMajors = new int[profiles.length];
+		double[][] editableAdjacency = helper.arrayCopy(adjacency);
+		int[] edges = new int[2];
+		
+		// Assign every person a major based on their skills
+		// This major will be the 'color' of their node
+		for (int i=0; i<profiles.length; i++) {
+			
+			// Find the largest of their skills, assign that as their major
+			double max = 0;
+			int maxIndex = -1;
+			for (int j=0; j<profiles[i].skills.length; j++) {
+				if (profiles[i].skills[j] > max) {
+					max = profiles[i].skills[j];
+					maxIndex = j;
+				}
+			}
+			
+			profileMajors[i] = maxIndex;
+		}
+		
+		// Pretty much run greedy but take majors into consideration to form a rainbow graph
+		for (int i=0; i<numTeams; i++) {
+			for (int j=0; j<cliqueSize; j++) {
+				if(j==0) {
+					
+					// Create a new team with the current best pair if team is currently empty
+					edges = highestEdge(editableAdjacency);
+					teams[i].memberIds[0] = edges[0];
+					teams[i].memberIds[1] = edges[1];
+					j++;
+					
+					// Reduce the likelihood of choosing another teammate with that major
+					for (int k=0; k<profiles.length; k++) {
+						if (profileMajors[k] == profileMajors[edges[0]] || profileMajors[k] == profileMajors[edges[1]]) {
+							editableAdjacency[k][edges[0]] = Math.max(editableAdjacency[k][edges[0]]/colorWeight, 0.01);
+							editableAdjacency[edges[0]][k] = Math.max(editableAdjacency[edges[0]][k]/colorWeight, 0.01);
+							editableAdjacency[k][edges[1]] = Math.max(editableAdjacency[k][edges[1]]/colorWeight, 0.01);
+							editableAdjacency[edges[1]][k] = Math.max(editableAdjacency[edges[1]][k]/colorWeight, 0.01);
+						}
+					}
+				}
+				else {
+					
+					// Otherwise, add members to an existing team
+					teams[i].memberIds[j] = highestNode(editableAdjacency, Arrays.copyOfRange(teams[i].memberIds, 0, j));
+				}
+			}
+			
+			for (int j=0; j<adjacency.length; j++) {
+				for (int k=0; k<cliqueSize; k++) {
+					if (teams[i].memberIds[k] >= 0) {
+						editableAdjacency[teams[i].memberIds[k]][j] = -1;
+						editableAdjacency[k][teams[i].memberIds[k]] = -1;
+					}
+				}
+			}
+		}
+		
+		return teams;
 	}
 	
 
