@@ -143,7 +143,6 @@ public class Graph {
 		return proposedTeams;
 	}
 	
-
 	public Team[] greedyV2(int numToSkip, PersonProfile[] profiles){
 		/*
 		 * profiles: List of all PersonProfiles
