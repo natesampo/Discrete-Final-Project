@@ -44,7 +44,7 @@ public class Graph {
 		//Used for random profile generation
 //		final PersonProfile[] profiles = helper.generateProfiles(numNodes, numSkills, maxSilverBullets, maxPreferredPartners, numProjects, projectPreferences);
 		//Used for referencing the POE profiles.
-		final PersonProfile[] profiles = CSVReader.readProfiles("Teaming_Anonymized.csv");
+		final PersonProfile[] profiles = CSVReader.readProfiles("C:\\Users\\N4tticus\\Desktop\\Teaming_Anonymized.csv");
 
 		numNodes = profiles.length;
 		numTeams = (int) java.lang.Math.ceil((numNodes / cliqueSize));
@@ -466,8 +466,8 @@ public class Graph {
 		int[] profileMajors = new int[profiles.length];
 		double[][] editableAdjacency = helper.arrayCopy(adjacency);
 		int[] edges = new int[2];
-		int leftovers = profiles.length;
 		HashSet<Integer> completeTeams = new HashSet<Integer>();
+		HashSet<Integer> notLeftOut = new HashSet<Integer>();
 		
 		// Assign every person a major based on their skills
 		// This major will be the 'color' of their node
@@ -495,8 +495,9 @@ public class Graph {
 					edges = highestEdge(editableAdjacency);
 					teams[i].memberIds[0] = edges[0];
 					teams[i].memberIds[1] = edges[1];
-					leftovers -= 2;
 					j++;
+					notLeftOut.add(edges[0]);
+					notLeftOut.add(edges[1]);
 					
 					// Reduce the likelihood of choosing another teammate with that major
 					for (int k=0; k<profiles.length; k++) {
@@ -508,26 +509,60 @@ public class Graph {
 						}
 					}
 				}
+				
 				else {
 					
-					// Otherwise, add members to an existing team
-					teams[i].memberIds[j] = highestNode(editableAdjacency, Arrays.copyOfRange(teams[i].memberIds, 0, j));
-					leftovers--;
+					// If team is not empty, add members to an existing team
+					// Keep trying new people until find one without being silver bulleted
+					
+					boolean silverBulleted = true;
+					int potentialMember = -1;
+					while(silverBulleted) {
+						silverBulleted = false;
+						
+						// See if we can add this person to the team
+						potentialMember = highestNode(editableAdjacency, Arrays.copyOfRange(teams[i].memberIds, 0, j));
+						
+						// Check every potential teammate for silver bullets to this person
+						for (int k=0; k<teams[i].memberIds.length; k++) {
+							
+							// If someone has silver bulleted this person, go through every other team member and prevent them from picking this person
+							if (profiles[teams[i].memberIds[k]].silverBullets.contains(potentialMember)) {
+								for (int l=0; l<teams[i].memberIds.length; l++) {
+									editableAdjacency[teams[i].memberIds[l]][potentialMember] = -1;
+									editableAdjacency[potentialMember][teams[i].memberIds[l]] = -1;
+								}
+								
+								silverBulleted = true;
+							}
+						}
+					}
+					
+					// When we finally find someone who hasn't been silver bulleted, add them to the team
+					teams[i].memberIds[j] = potentialMember;
+					notLeftOut.add(teams[i].memberIds[j]);
 				}
 			}
 			
+			// Stop selecting the same person in the future
 			for (int j=0; j<adjacency.length; j++) {
 				for (int k=0; k<cliqueSize; k++) {
-					if (teams[i].memberIds[k] >= 0) {
-						editableAdjacency[teams[i].memberIds[k]][j] = -1;
-						editableAdjacency[k][teams[i].memberIds[k]] = -1;
-					}
+					editableAdjacency[teams[i].memberIds[k]][j] = -1;
+					editableAdjacency[j][teams[i].memberIds[k]] = -1;
 				}
 			}
 		}
+
+		// Find any leftover people
+		HashSet<Integer> leftOut = new HashSet<Integer>();
+		for (int j=0; j<profiles.length; j++) {
+			if (!notLeftOut.contains(j)) {
+				leftOut.add(j);
+			}
+		}
 		
-		// Add any leftover people (basically create the teams of 5
-		for (int j=profiles.length-leftovers-1; j<profiles.length; j++) {
+		// Add any leftover people (basically create the teams of 5)
+		for (int j : leftOut) {
 			int minTeamIndex = 0;
 			double minTeam = 100;
 			for (int k=0; k<teams.length; k++) {
@@ -901,7 +936,7 @@ public class Graph {
 		}
 		
 		// Add any leftover people (basically create the teams of 5)
-		for (int j=profiles.length-leftovers-1; j<profiles.length; j++) {
+		for (int j=profiles.length-leftovers; j<profiles.length; j++) {
 			for (int k=0; k<teams.length; k++) {
 				if (!completeTeams.contains(k)) {
 					boolean valid = true;
