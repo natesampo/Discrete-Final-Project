@@ -28,7 +28,7 @@ public class Graph {
 		final int maxSilverBullets = 2;
 		final int maxPreferredPartners = 6;
 		final double skillsWeight = 0.2; // Average dot product looks to be ~1.3
-		final double preferenceWeight = 0.5;
+		final double preferenceWeight = 0.8;
 		final int numSkills = 5;
 		final int numProjects = numNodes * 2;
 		final int projectPreferences = 3;
@@ -41,14 +41,10 @@ public class Graph {
 
 		helper = new Helper();
 		
+		//Used for random profile generation
 //		final PersonProfile[] profiles = helper.generateProfiles(numNodes, numSkills, maxSilverBullets, maxPreferredPartners, numProjects, projectPreferences);
+		//Used for referencing the POE profiles.
 		final PersonProfile[] profiles = CSVReader.readProfiles("C:\\Users\\N4tticus\\Desktop\\Teaming_Anonymized.csv");
-
-//		final PersonProfile[] profilesOld = CSVReader.readProfiles("Teaming_Anonymized.csv");
-//		final PersonProfile[] profiles = new PersonProfile[40];
-//		for(int x = 0; x < 40; x++) {
-//			profiles[x] = profilesOld[x];
-//		}
 
 		numNodes = profiles.length;
 		numTeams = (int) java.lang.Math.ceil((numNodes / cliqueSize));
@@ -99,16 +95,22 @@ public class Graph {
 
 	//Returns a matrix with rows showing different teams with the first column being a score out of 100
 	public Team[] greedyCliques(PersonProfile[] profiles){
+		/*
+		 * profiles: List of all PersonProfiles
+		 * return: Team[] of suggested teams
+		 */
+		
+		//Variable declaration
 		double[][] editableAdjacency = helper.arrayCopy(adjacency);
 		int[] newAdditions = new int[2];
 		int newNeighbor;
 		Team[] proposedTeams = helper.generateTeamArray(numTeams, cliqueSize);
-		boolean[] peepsUsed = new boolean[numNodes];
+		boolean[] peepsUsed = new boolean[numNodes];	//Tracks who is being used in order to add any stragglers
 
-		
+		//Iterate through all teams
 		for (int teamNum = 0; teamNum < numTeams; teamNum++) {
 			for (int memNum = 0; memNum < cliqueSize; memNum++) {
-				if(memNum == 0) { //If we need to find the highest edge (starting a new team)
+				if(memNum == 0) { //If we need to find the highest edge in the adjacency graph (starting a new team)
 					newAdditions = highestEdge(editableAdjacency);
 					proposedTeams[teamNum].memberIds[0] = newAdditions[0];
 					proposedTeams[teamNum].memberIds[1] = newAdditions[1];
@@ -116,12 +118,14 @@ public class Graph {
 					peepsUsed[newAdditions[0]] = true;
 					memNum++;
 				}
-				else { //If we want to find the node that best fits with our current nodes
+				else { //If we want to find the node that best fits with our current team 
 					newNeighbor = highestNode(editableAdjacency, Arrays.copyOfRange(proposedTeams[teamNum].memberIds, 0, memNum));
 					proposedTeams[teamNum].memberIds[memNum] = newNeighbor;
 					peepsUsed[newNeighbor] = true;
 				}
 			}
+			
+			//Update the editableAdjacency so that people included in one team aren't included in multiple teams 
 			for (int rowCol = 0; rowCol < adjacency.length; rowCol++) {
 				for (int currMem = 0; currMem < cliqueSize; currMem++) { //Edit the editableadjacency to make sure we don't select 
 					if (proposedTeams[teamNum].memberIds[currMem] >= 0) {
@@ -131,6 +135,7 @@ public class Graph {
 				}
 			}
 		}
+		//If the number of people odn't line up, add the extras by finding their best team fit.
 		if(numTeams*cliqueSize != numNodes) {
 			proposedTeams = addExtras(proposedTeams, profiles, peepsUsed);
 		}
@@ -140,12 +145,21 @@ public class Graph {
 	
 
 	public Team[] greedyV2(int numToSkip, PersonProfile[] profiles){
-		//Difference between greedy and greedy v2: Greedy v2 skips the top (numToSkip) edges when picking the next edge to start a clique with
+		/*
+		 * profiles: List of all PersonProfiles
+		 * numToSkip: The number of best connections to skip when forming a team
+		 * return: Team[] of suggested teams
+		 * Difference between greedy and greedy v2: Greedy v2 skips the top (numToSkip) edges when picking the next edge to start a clique with
+		 */
+		
+		//Variable Declaration
 		double[][] editableAdjacency = helper.arrayCopy(adjacency);
 		int[] newAdditions = new int[2];
 		int newNeighbor;
 		boolean[] peepsUsed = new boolean[numNodes];
 		Team[] proposedTeams = helper.generateTeamArray(numTeams, cliqueSize);
+		
+		
 		//Iterating through the teams
 		for (int teamNum = 0; teamNum < numTeams; teamNum++) {
 			//Try to form a team
@@ -174,13 +188,20 @@ public class Graph {
 				}
 			}
 		}
+		
+		//Add unused people to teams
 		if(numTeams*cliqueSize != numNodes) {
 			proposedTeams = addExtras(proposedTeams, profiles, peepsUsed);
 		}
 		return proposedTeams;
 	}
 	
+	//Generates all valid cliques from a list of personProfiles
 	public Team[] allCliques(PersonProfile[] profiles){
+		/*
+		 * profiles - The list of all person profiles who can be put on teams
+		 * return: Team[] of all valid teams that can be formed (Mathematicall Choose(number of profiles, cliqueSize)
+		 */
 		int numPeeps = adjacency.length;
 		int numPossTeams = -1;
 		if (numPeeps == 24) {
@@ -193,13 +214,14 @@ public class Graph {
 			numPossTeams = 1581580; //80 people
 		}
 		else {
-			numPossTeams = 3921225;
+			numPossTeams = 3921225; //100 people, the maximum acceptable before it was arbitrarily deemed to be too compute intensive
 		}
 		Team[] tempTeams = helper.generateTeamArray(numPossTeams, cliqueSize);
 		
 		int currTeam = 0;
 		
-		//numPeeps - 3 because there are 3 other members
+		//Builds up all teams, starting from 1, 2, 3, 4 if valid then incrementing the the last member until it overflows and increments the next
+		//The maximum number is the number of people - the slot to the left that the person is
 		for (int firstMem = 0; firstMem < numPeeps - 3; firstMem++) {
 			for (int secondMem = firstMem + 1; secondMem < numPeeps - 2; secondMem++) {
 				if(adjacency[firstMem][secondMem] > 0) {
@@ -211,7 +233,7 @@ public class Graph {
 									tempTeams[currTeam].memberIds[1] = secondMem;
 									tempTeams[currTeam].memberIds[2] = thirdMem;
 									tempTeams[currTeam].memberIds[3] = fourthMem;
-									currTeam++;
+									currTeam++; //Keeps track of the number of used teams
 								}
 								else if (currTeam >= numPossTeams) {
 									System.out.println("Ended up with more teams than possible??");
@@ -224,6 +246,7 @@ public class Graph {
 		}
 		
 		//Make sure all teams in returned array are populated
+		//Number of teams were counted as they were generated. 
 		Team[] finalTeams = helper.generateTeamArray(currTeam, cliqueSize);
 		for (int i = 0; i < currTeam; i++) {
 			finalTeams[i] = tempTeams[i];
@@ -234,6 +257,12 @@ public class Graph {
 	
 	//The leader into the brute force solution. To be updated so it uses the first 15 or so from the greedy clique algorithm.
 	public Team[] bruteCliques(Team[] allTeams, ResultScorer scorer, PersonProfile[] profiles) {
+		/*
+		 * allTeams - List of all teams that can be formed from the person profiles
+		 * scorer - Gives a result scorer in order to know which teams are best
+		 * profiles - A list of all profiles of students.
+		 * return: Returns the suggested list of teams
+		 */
 
 		Team[] finalTeams = helper.generateTeamArray(numTeams, cliqueSize);
 		boolean[] peepsUsed = new boolean[numNodes];
@@ -246,20 +275,31 @@ public class Graph {
 		
 	}
 	
-	//membersUsed of True means it's used
+	//NOTE: this takes too long to feasibly run, thus the lack of it being run in hte main function.
 	public Team[] recursiveSoln(Team[] currTeam, Team[] allTeams, int maxUsed, boolean[] membersUsed, ResultScorer scorer, PersonProfile[] profiles) {
-		//NOTE: this takes too long to feasibly run, thus the lacking comments and it not being used.
+		/*
+		 * currTeam - list of the current teams generated; ideal is to use the greedy algorithm to solve this part first
+		 * allTeams - List of all teams that can be formed from the person profiles
+		 * maxUsed - the maximum used team so far (used for recursion)
+		 * membersUsed - boolean[], indicating which students are on a team
+		 * scorer - Gives a result scorer in order to know which teams are best
+		 * profiles - A list of all profiles of students.
+		 * return: Returns the suggested list of teams
+		 */
+		
+		//Variable declaration
 		Team[] tempTeam = helper.generateTeamArray(numTeams, cliqueSize);
 		Team[] finTeam = helper.generateTeamArray(numTeams, cliqueSize);
 		double score = 0.0;
 		ResultScorer.TeamSetScore tempScorer;
-		
 		Team[] newCurrTeam = helper.generateTeamArray(currTeam.length + 1, cliqueSize);
 		
+		//Copying over the old teams
 		for(int x = 0; x < currTeam.length; x++) {
 			newCurrTeam[x] = currTeam[x];
 		}
 		
+		//Update print statements
 		if(currTeam.length == 1) {
 			System.out.printf("Top level of: %d\n", maxUsed);
 		}
