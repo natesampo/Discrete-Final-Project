@@ -19,7 +19,7 @@ The brute force clique assignments first took all valid cliques that could be cr
 [[how was this different again?]]
 
 ### Greedy Clique Selection
-The greedy clique selection algorithm determined what the mean clique score should be and generated a full set of cliques with that score. Any additional members are then added to the team of four where they fit best. This was a compromise between checking all possible cliques and creating more balanced cliques.
+The greedy clique selection algorithm determined what the mean clique score should be by determining the mean skill total of the profiles and then multiplying it by the clique size. After this, it uses the list of all possible cliques from the students to draw teams with the closest score to the mean possible. Any additional members are then added to the team of four where they fit best. This was a compromise between checking all possible cliques and creating more balanced cliques.
 
 ### Clique Coloring
 
