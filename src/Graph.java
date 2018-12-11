@@ -44,7 +44,7 @@ public class Graph {
 		//Used for random profile generation
 //		final PersonProfile[] profiles = helper.generateProfiles(numNodes, numSkills, maxSilverBullets, maxPreferredPartners, numProjects, projectPreferences);
 		//Used for referencing the POE profiles.
-		final PersonProfile[] profiles = CSVReader.readProfiles("C:\\Users\\N4tticus\\Desktop\\Teaming_Anonymized.csv");
+		final PersonProfile[] profiles = CSVReader.readProfiles("Teaming_Anonymized.csv");
 
 		numNodes = profiles.length;
 		numTeams = (int) java.lang.Math.ceil((numNodes / cliqueSize));
@@ -293,6 +293,8 @@ public class Graph {
 		double score = 0.0;
 		ResultScorer.TeamSetScore tempScorer;
 		Team[] newCurrTeam = helper.generateTeamArray(currTeam.length + 1, cliqueSize);
+		boolean finTeamGood = false;
+		boolean validTeamSelect;
 		
 		//Copying over the old teams
 		for(int x = 0; x < currTeam.length; x++) {
@@ -310,17 +312,16 @@ public class Graph {
 			System.out.println("3 left checkin.");
 		}
 		
-		boolean finTeamGood = false;
-		
-		boolean validTeamSelect = true;
+		//Looping through the remainder of the teams
 		for(int i = maxUsed; i < allTeams.length - numTeams + currTeam.length; i++) {
-			
+			validTeamSelect = true; //Reset team validity
+			//Looking at the next team, update the list of which members are in a team and make sure all are valid members
 			for(int j : allTeams[i].memberIds) {
 				if(membersUsed[j]) {
 					validTeamSelect = false;
 				}
 			}
-				
+			//If the team was valid
 			if(validTeamSelect) {
 				for(int j : allTeams[i].memberIds) {
 					membersUsed[j] = true;
@@ -330,7 +331,7 @@ public class Graph {
 				
 				tempTeam = recursiveSoln(newCurrTeam, allTeams, i, membersUsed, scorer, profiles);
 				
-				if(finTeamGood) { //If we have a final Team
+				if(finTeamGood) { //If we have a final team yet
 					tempScorer = scorer.scoreTeams(tempTeam, profiles);
 					
 					if(tempScorer.pointsSD < score) {
@@ -344,25 +345,31 @@ public class Graph {
 					score = tempScorer.pointsSD;
 					finTeamGood = true;
 				}
-
-				
+				//Reset member usage as they won't be used in the next set of teams
 				for(int j : allTeams[i].memberIds) {
 					membersUsed[j] = false;
 				}
 			}
-			validTeamSelect = true;
 		}
 		
 		return finTeam;
 	}
 	
+	//NOTE: this takes too long to feasibly run, thus the lack of it being run in hte main function.
 	public Team[] recursiveSolnV2(Team[] currTeam, Team[] allTeams, boolean[] membersUsed, ResultScorer scorer, PersonProfile[] profiles) {
-		//NOTE: this takes too long to feasibly run, thus the lacking comments and it not being used.
+		/*
+		 * currTeam - list of the current teams generated; ideal is to use the greedy algorithm to solve this part first
+		 * allTeams - List of all teams that can be formed from the person profiles
+		 * membersUsed - boolean[], indicating which students are on a team
+		 * scorer - Gives a result scorer in order to know which teams are best
+		 * profiles - A list of all profiles of students.
+		 * return: Returns the suggested list of teams
+		 */
 		//If we have the right number of teams, return the teams
 		if(currTeam.length == numTeams) {
-//			System.out.println("We returned something!");
 			return currTeam;
 		}
+		
 		//Set up variables
 		Team[] tempTeam = helper.generateTeamArray(numTeams, cliqueSize);
 		Team[] finTeam = helper.generateTeamArray(numTeams, cliqueSize);
@@ -370,8 +377,8 @@ public class Graph {
 		ResultScorer.TeamSetScore tempScorer;
 		int newAllTeamLen = 0;
 		int[] goodTeams = new int[allTeams.length];
-		boolean finTeamGood = false;
-		boolean keepTeam;
+		boolean finTeamGood = false; //Whether or not we have a final team yet
+		boolean keepTeam; //Whether or not we should keep a team
 		
 		//Start generating the old team
 		Team[] newCurrTeam = helper.generateTeamArray(currTeam.length + 1, cliqueSize);
@@ -391,16 +398,12 @@ public class Graph {
 		else if (numTeams - currTeam.length == 3) {
 			System.out.println("3 left checkin.");
 		}
-//		else if (numTeams - currTeam.length == 2) {
-//			System.out.println("2 left checkin.");
-//		}
-//		else if (numTeams - currTeam.length == 1) {
-//			System.out.println("1 left checkin.");
-//		}
 		
+		//Loop through the rest of the teams that could be made
 		for(int i = 0; i < allTeams.length - numTeams + currTeam.length; i++) {
 			//Update the newCurrTeam and corresponding membersUsed
 			newCurrTeam[currTeam.length] = allTeams[i]; 
+			
 			//Reset how many people are in the length of it
 			newAllTeamLen = 0;
 			for(int j : allTeams[i].memberIds) {
@@ -456,6 +459,10 @@ public class Graph {
 	
 	// Start of colored clique finding by major
 	public Team[] getColoredCliques(PersonProfile[] profiles) {
+		/*
+		 * profiles - list of all personProfiles
+		 * return: Team[] of suggested teams
+		 */
 		Team[] teams = helper.generateTeamArray(numTeams, cliqueSize);
 		int[] profileMajors = new int[profiles.length];
 		double[][] editableAdjacency = helper.arrayCopy(adjacency);
@@ -624,13 +631,23 @@ public class Graph {
 	}
 	
 	public Team[] addExtras(Team[] finalTeams, PersonProfile[] profiles, boolean[] peepsUsed) {
+		/*
+		 * finalTeams - The finalized teams withOOUT additional students added
+		 * profiles - list of person profiles
+		 * peepsUsed - List indicating which members have and haven't been used in a team
+		 * return - all teams suggested in the format of Team[]
+		 */
+		//Variable declaration
 		double bestCurrFit;
 		double tempFit;
 		int teamAddition;
+		
+		//Iterating through each member, checking if they were used
 		for(int i = 0; i < peepsUsed.length; i++) {
-			bestCurrFit = 0.0;
-			teamAddition = -1;
-			if(!peepsUsed[i]) {
+			
+			if(!peepsUsed[i]) { //If the person isn't in a team yet
+				bestCurrFit = 0.0;
+				teamAddition = -1;
 				for(int j = 0; j < finalTeams.length; j++) { //Find the best team
 					tempFit = getFit(finalTeams[j], i);
 					if (tempFit > bestCurrFit && finalTeams[j].memberIds.length == cliqueSize) { //Determine if the team being looked at is better and is at the clique size
@@ -638,7 +655,7 @@ public class Graph {
 						teamAddition = j;
 					}
 				}
-				//Add the team
+				//Add them to the best team
 				finalTeams[teamAddition].increaseSize(1);
 				finalTeams[teamAddition].memberIds[cliqueSize] = i;
 			}
@@ -771,6 +788,13 @@ public class Graph {
 	
 	//Generates the adjacency matrix from the profiles using our secret formula.
 	public double[][] generateAdjacency(PersonProfile[] profiles, double skillsWeight, double preferenceWeight, double projectWeight) {
+		/*
+		 * profiles - The full list of profiles of different students
+		 * skillsWeight - the weight we assign to skill alignment
+		 * preferenceWeight - the weight we assign to having preferred partners
+		 * projectWeight - the weight we assign to having the same preferred project
+		 * return - the Adjacency Matrix with edge weights. The higher the weight, the stronger the connection
+		 */
 		double[][] adjacencyArray = new double[profiles.length][profiles.length];
 		
 		for(int i=0; i<profiles.length; i++) {
@@ -798,7 +822,6 @@ public class Graph {
 				leftovers--;
 			}
 		}
-
 		
 		// Then check for silver bullets
 		for (int i=0; i<numTeams; i++) {
@@ -814,7 +837,6 @@ public class Graph {
 				}
 			}
 		}
-		
 		
 		// While there are teams missing people, continue trying to match people to teams
 		int i=0;
