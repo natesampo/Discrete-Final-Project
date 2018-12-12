@@ -51,7 +51,7 @@ public class ColoredCliques {
                 if(j==0) {
 
                     // Create a new team with the current best pair if team is currently empty
-                    edges = scratchGraph.highestEdge();
+                    edges = scratchGraph.highestEdgeV2(0, true);
                     teams[i].memberIds[0] = edges[0];
                     teams[i].memberIds[1] = edges[1];
                     j++;
