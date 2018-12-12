@@ -1,3 +1,5 @@
+import java.io.File;
+
 public class TeamFormer {
 
     private final int MAX_SILVER_BULLETS = 2;
@@ -7,19 +9,18 @@ public class TeamFormer {
     private final double SKILLS_WEIGHT = 0.2; // Average dot product looks to be ~1.3
     private final double PREFERENCE_WEIGHT = 0.8;
     private final double PROJECT_WEIGHT = 0.3; // Weight per same project in preferred projects
-    //    private final int numProjects = numNodes * 2;
-    //    private final int numSkills = 5;
-    private int numTeams;
     private Graph graph;
 
-    public TeamFormer() {
+    public TeamFormer(String filename) {
 
         double colorWeight = 1.1;
-
-        //Used for random profile generation
-//		final PersonProfile[] profiles = helper.generateProfiles(numPeople, numSkills, MAX_SILVER_BULLETS, MAX_PREFERRED_PARTNERS, numProjects, MAX_PREFERRED_PROJECTS);
-        //Used for referencing the POE profiles.
-        final PersonProfile[] profiles = CSVReader.readProfiles("Teaming_Anonymized.csv");
+        PersonProfile[] profiles;
+        if (filename != null) {
+            profiles = CSVReader.readProfiles(filename);
+        } else {
+            profiles = Helper.generateProfiles(TEAM_SIZE * 10, 3, MAX_SILVER_BULLETS,
+                    MAX_PREFERRED_PARTNERS, MAX_PREFERRED_PROJECTS * 3, MAX_PREFERRED_PROJECTS);
+        }
 
         int numPeople = profiles.length;
         int numTeams = (int) java.lang.Math.ceil((numPeople / TEAM_SIZE));
@@ -70,7 +71,18 @@ public class TeamFormer {
 
 
     public static void main(String[] args) {
-        new TeamFormer();
+        if (args.length > 0) {
+            String filename = args[0];
+            if (new File(filename).exists()) {
+                new TeamFormer(filename);
+            } else {
+                System.out.println("Could not find specified file. Using randomly generated data.");
+                new TeamFormer(null);
+            }
+        } else {
+            System.out.println("No teaming data file specified. Using randomly generated data.");
+            new TeamFormer(null);
+        }
     }
 
     }
