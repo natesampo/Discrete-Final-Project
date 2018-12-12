@@ -7,11 +7,13 @@ public class TeamFormer {
     private final int MAX_PREFERRED_PROJECTS = 3;
     private final int TEAM_SIZE = 4;
     private final double SKILLS_WEIGHT = 0.2; // Average dot product looks to be ~1.3
-    private final double PREFERENCE_WEIGHT = 0.8;
-    private final double PROJECT_WEIGHT = 0.3; // Weight per same project in preferred projects
+    private final double PARTNER_PREFERENCE_WEIGHT = 0.8;
+    private final double PROJECT_PREFERENCE_WEIGHT = 0.3; // Weight per same project in preferred projects
     private Graph graph;
 
     public TeamFormer(String filename) {
+
+
 
         double colorWeight = 1.1;
         PersonProfile[] profiles;
@@ -27,7 +29,7 @@ public class TeamFormer {
         double avgScore = Helper.averageSkillTotal(profiles) * TEAM_SIZE;
 
 
-        graph = new Graph(profiles, SKILLS_WEIGHT, PREFERENCE_WEIGHT, PROJECT_WEIGHT);
+        graph = new Graph(profiles, SKILLS_WEIGHT, PARTNER_PREFERENCE_WEIGHT, PROJECT_PREFERENCE_WEIGHT);
         graph.adjacency = Helper.normalize(graph.adjacency);
 
 

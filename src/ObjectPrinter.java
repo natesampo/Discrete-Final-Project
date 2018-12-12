@@ -21,6 +21,9 @@ public class ObjectPrinter {
         sb.append('\t');
         sb.append("Total SD: ");
         appendDouble(sb, score.pointsSD);
+        sb.append('\t');
+        sb.append("Mean percentage partner preferences met: ");
+        appendDouble(sb, score.meanPartPrefsSatisfied);
 
         System.out.println(sb.toString());
     }
@@ -41,10 +44,6 @@ public class ObjectPrinter {
         }
 
         sb.append(t.score.isValid ? "Valid   " : "Invalid ");
-        sb.append('\t');
-
-        sb.append("Connection strength: ");
-        appendDouble(sb, t.connectionStrength);
         sb.append('\t');
 
         sb.append("Total points: ");

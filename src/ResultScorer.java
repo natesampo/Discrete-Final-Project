@@ -4,34 +4,42 @@ import java.util.stream.DoubleStream;
 public class ResultScorer {
 
     public static TeamSetScore scoreTeams(Team[] teams, PersonProfile[] profiles) {
-        TeamSetScore score = new TeamSetScore(teams);
+        TeamSetScore setScore = new TeamSetScore(teams);
 
         // First score all the teams and check their validity
-        score.allTeamsValid = true;
+        setScore.allTeamsValid = true;
         for (int i = 0; i < teams.length; ++i) {
             Team team = teams[i];
             TeamScore teamScore = scoreTeam(team, profiles);
-            score.teamScores[i] = teamScore;
-            score.allTeamsValid = score.allTeamsValid && team.score.isValid;
+            setScore.teamScores[i] = teamScore;
+            setScore.allTeamsValid = setScore.allTeamsValid && team.score.isValid;
         }
 
         // Then compute some summary statistics
-        score.totalSkillMin = score.teamScores[0].skillPointTotal; // Initialize this to the first team's total
+        setScore.totalSkillMin = setScore.teamScores[0].skillPointTotal; // Initialize this to the first team's total
         int numSkills = teams[0].score.pointsBySkillSum.length;
         double[][] skillPointTotals = new double[teams.length][numSkills];
         double[] skillTotals = new double[teams.length];
         for (int i = 0; i < teams.length; ++i) {
-            TeamScore teamScore = score.teamScores[i];
+            TeamScore teamScore = setScore.teamScores[i];
             skillTotals[i] = teamScore.skillPointTotal;
-            score.totalSkillMin = Math.min(score.totalSkillMin, teamScore.skillPointTotal);
-            score.totalSkillMax = Math.max(score.totalSkillMax, teamScore.skillPointTotal);
+            setScore.totalSkillMin = Math.min(setScore.totalSkillMin, teamScore.skillPointTotal);
+            setScore.totalSkillMax = Math.max(setScore.totalSkillMax, teamScore.skillPointTotal);
             System.arraycopy(teamScore.pointsBySkillSum, 0, skillPointTotals[i], 0, teamScore.pointsBySkillSum.length);
         }
         // Finish calculating skill point total SD
-        score.pointsBySkillSD = computeStandardDevs(skillPointTotals);
-        score.pointsSD = computeStandardDev(skillTotals);
+        setScore.pointsBySkillSD = computeStandardDevs(skillPointTotals);
+        setScore.pointsSD = computeStandardDev(skillTotals);
 
-        return score;
+        // Calculate average fraction of partner preferences met
+        double partPrefRunningTotal = 0;
+        for (TeamScore teamScore : setScore.teamScores)
+            partPrefRunningTotal += teamScore.partnerPreferenceMetPercentage;
+
+        setScore.meanPartPrefsSatisfied = partPrefRunningTotal / teams.length;
+
+
+        return setScore;
     }
 
     public static TeamScore scoreTeam(Team team, PersonProfile[] profiles) {

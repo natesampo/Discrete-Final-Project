@@ -7,6 +7,7 @@ public class TeamSetScore {
     public double totalSkillSD;
     public double totalSkillMin;
     public double totalSkillMax;
+    public double meanPartPrefsSatisfied;
 
     public double pointsSD;
 
