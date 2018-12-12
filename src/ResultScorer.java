@@ -1,11 +1,9 @@
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.stream.DoubleStream;
 
 public class ResultScorer {
 
-    public TeamSetScore scoreTeams(Team[] teams, PersonProfile[] profiles) {
+    public static TeamSetScore scoreTeams(Team[] teams, PersonProfile[] profiles) {
         TeamSetScore score = new TeamSetScore(teams);
 
         // First score all the teams and check their validity
@@ -33,13 +31,10 @@ public class ResultScorer {
         score.pointsBySkillSD = computeStandardDevs(skillPointTotals);
         score.pointsSD = computeStandardDev(skillTotals);
 
-        // TODO: Calculate preference meeting percentage
-
-
         return score;
     }
 
-    public TeamScore scoreTeam(Team team, PersonProfile[] profiles) {
+    public static TeamScore scoreTeam(Team team, PersonProfile[] profiles) {
         if (team.memberIds.length < 1) {
             throw new IllegalArgumentException("A team must consist of at least 1 member.");
         }
@@ -192,54 +187,6 @@ public class ResultScorer {
         for (double d : arr)
             tot += d;
         return tot / arr.length;
-    }
-
-    public class TeamSetScore {
-        public Team[] teams;
-        public boolean allTeamsValid;
-        public TeamScore[] teamScores;
-        public double[] pointsBySkillSD;
-        public double totalSkillRange;
-        public double totalSkillSD;
-        public double totalSkillMin;
-        public double totalSkillMax;
-        
-        public double pointsSD;
-
-        // TODO: Implement overall stats
-
-        public TeamSetScore(Team[] teams) {
-            this.teams = teams;
-            teamScores = new TeamScore[teams.length];
-        }
-    }
-
-    public class TeamScore {
-
-        // Keep track of if the team is invalid for any reason (e.g. silver bullets)
-        public boolean isValid = true;
-
-        // The total number of "points" for all skills across all members.
-        public double skillPointTotal;
-
-        // For each skill, the min, max, mean, and sum of the ratings of the members.
-        // The lengths of these arrays are the number of skills being tracked.
-        public double[] pointsBySkillMin;
-        public double[] pointsBySkillMax;
-        public double[] pointsBySkillMean;
-        public double[] pointsBySkillSum;
-        public double[] pointsBySkillRange;
-        public double[] pointsBySkillSD;
-        
-        public double pointsRange;
-        public double pointsSD;
-
-        // The average (mean) rating across all skills and across all team members
-        public double meanSkillRating;
-
-        // The percentage of partner requests that were met
-        public double partnerPreferenceMetPercentage;
-
     }
 
 }

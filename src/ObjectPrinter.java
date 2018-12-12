@@ -4,7 +4,7 @@ public class ObjectPrinter {
 
     private static final int DOUBLE_DECIMAL_PLACES = 2;
 
-    public static void printTeamSetScore(ResultScorer.TeamSetScore score) {
+    public static void printTeamSetScore(TeamSetScore score) {
         printTeamArray(score.teams);
 
         // Print out the summary statistics

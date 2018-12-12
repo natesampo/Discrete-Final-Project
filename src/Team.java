@@ -2,7 +2,7 @@ public class Team {
 
     public int[] memberIds;
     public double connectionStrength;
-    public ResultScorer.TeamScore score;
+    public TeamScore score;
 
     public Team(int size) {
         this.memberIds = new int[size];
