@@ -22,4 +22,8 @@ public class Team {
     	this.memberIds = newIds;
     }
 
+    public int getSize() {
+        return memberIds.length;
+    }
+
 }

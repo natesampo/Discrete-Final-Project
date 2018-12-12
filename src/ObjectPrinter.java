@@ -73,6 +73,10 @@ public class ObjectPrinter {
         sb.append("Partner preferences met: ");
         appendDouble(sb, t.score.partnerPreferenceMetPercentage * 100);
         sb.append("%");
+        sb.append('\t');
+
+        sb.append("Members with common project: ");
+        appendDouble(sb, t.score.fractionTeamMembersWithCommonProject * 100);
 
         System.out.println(sb.toString());
     }

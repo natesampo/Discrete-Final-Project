@@ -24,4 +24,7 @@ public class TeamScore {
     // The percentage of partner requests that were met
     public double partnerPreferenceMetPercentage;
 
+    // The fraction of team members who have expressed interest in the same project
+    public double fractionTeamMembersWithCommonProject;
+
 }

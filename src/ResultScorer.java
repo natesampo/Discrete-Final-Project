@@ -1,3 +1,4 @@
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.stream.DoubleStream;
 
@@ -135,7 +136,6 @@ public class ResultScorer {
         HashSet<Integer> teamMemberIdsSet = new HashSet<>();
         for (int memberId : team.memberIds)
             teamMemberIdsSet.add(memberId);
-        
 
         for (int memberId : team.memberIds) {
             HashSet<Integer> preferredPartners = new HashSet<>(profiles[memberId].preferredPartners);
@@ -151,6 +151,27 @@ public class ResultScorer {
         else {
         	score.partnerPreferenceMetPercentage = 1.0;
         }
+
+        // Determine what percentage of team members have a common project interest
+        totalRequests = 0;
+        totalMet = 0;
+        HashMap<Integer,Integer> preferredProjects = new HashMap<>();
+        for (int memberId : team.memberIds) {
+            for (int projectId : profiles[memberId].preferredProjects) {
+                if (preferredProjects.containsKey(projectId)) {
+                    preferredProjects.put(projectId, preferredProjects.get(projectId) + 1);
+                } else {
+                    preferredProjects.put(projectId, 1);
+                }
+            }
+        }
+
+        int max = 0;
+        for (int peopleInterested : preferredProjects.values())
+            max = Math.max(max, peopleInterested);
+
+        score.fractionTeamMembersWithCommonProject = (double)max / team.getSize();
+
 
         team.score = score;
         return score;
