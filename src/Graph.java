@@ -60,8 +60,7 @@ public class Graph {
 		 */
 		int[] locs = new int[2];
 		double currHigh = 0.0;
-
-		for(int i = 0; i < adjacency.length; i ++) {
+ 		for(int i = 0; i < adjacency.length; i ++) {
 			for (int j = 0; j < adjacency[0].length; j++) {
 				if (adjacency[i][j] > currHigh && i != j) { //Loop through, finding and updating highest edge
 					currHigh = adjacency[i][j];
@@ -70,8 +69,7 @@ public class Graph {
 				}
 			}
 		}
-
-		return locs;
+ 		return locs;
 	}
 
 	/*
@@ -190,8 +188,7 @@ public class Graph {
 				else {
 					tempVal = 0.0;
 				}
-
-			}
+ 			}
 			
 			//If the new calculated value is higher than the old saved one
 			if (tempVal > currHigh) {
