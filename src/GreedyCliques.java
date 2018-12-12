@@ -31,7 +31,7 @@ public class GreedyCliques {
         for (int teamNum = 0; teamNum < numTeams; teamNum++) {
             for (int memNum = 0; memNum < teamSize; memNum++) {
                 if(memNum == 0) { //If we need to find the highest edge in the adjacency graph (starting a new team)
-                    int[] newAdditions = scratchGraph.highestEdge();
+                    int[] newAdditions = scratchGraph.highestEdgeV2(0, true);
                     proposedTeams[teamNum].memberIds[0] = newAdditions[0];
                     proposedTeams[teamNum].memberIds[1] = newAdditions[1];
                     peepsUsed[newAdditions[1]] = true;
@@ -85,7 +85,7 @@ public class GreedyCliques {
             //Try to form a team
             for (int memNum = 0; memNum < teamSize; memNum++) {
                 if(memNum == 0) { //If we need to find the highest edge (starting a new team)
-                    newAdditions = scratchGraph.highestEdgeV2(numToSkip);
+                    newAdditions = scratchGraph.highestEdgeV2(numToSkip, false);
                     proposedTeams[teamNum].memberIds[1] = newAdditions[1];
                     proposedTeams[teamNum].memberIds[0] = newAdditions[0];
                     peepsUsed[newAdditions[1]] = true;
