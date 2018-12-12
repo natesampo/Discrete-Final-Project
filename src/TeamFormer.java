@@ -77,6 +77,7 @@ public class TeamFormer {
         if (args.length > 0) {
             String filename = args[0];
             if (new File(filename).exists()) {
+                System.out.println("Loading teaming survey data from file...");
                 new TeamFormer(filename);
             } else {
                 System.out.println("Could not find specified file. Using randomly generated data.");
