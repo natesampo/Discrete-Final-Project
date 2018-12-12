@@ -6,6 +6,9 @@ In order to run this project, run Graph.java after compiling all classes. This w
 
 ## Used Algorithms
 
+### Random
+One of the first algorithms we implemented, random teaming, was not intended to generate useful teamings, but rather to generate teamings for our future algorithms to test against. Random teaming, like our other algorithms, is deterministic, meaning that with the same data it will have the same output, allowing for better comparisons with other algorithms. The key difference between random teaming and our other team formation strategies is that random teaming does not take edge weights into consideration at all, and only pairs the first available people who haven't silver bulleted each other together.
+
 ### Greedy Clique Creation V1
 The first greedy clique creation starts each new clique by finding the edge with the highest weight in the adjacency matrix. From there, it searches all other nodes to see which is most strongly connected to those already in the clique. This pattern continues until the maximum number of full cliques is formed. If there were overflow persons, they were added to the teams they fit best with by total edge weightings between the current members and the prospective overflow person.
 
