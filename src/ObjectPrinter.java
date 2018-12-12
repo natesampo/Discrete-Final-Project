@@ -77,6 +77,7 @@ public class ObjectPrinter {
 
         sb.append("Members with common project: ");
         appendDouble(sb, t.score.fractionTeamMembersWithCommonProject * 100);
+        sb.append("%");
 
         System.out.println(sb.toString());
     }
