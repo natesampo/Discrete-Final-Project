@@ -38,10 +38,10 @@ public class TeamFormer {
         System.out.println("Result of random teams:");
         ObjectPrinter.printTeamSetScore(score0);
         System.out.println("\n\n");
-        Team[] coloredCliques = new ColoredCliques(graph, numTeams, TEAM_SIZE, colorWeight).run(profiles);
-        TeamSetScore score1 = ResultScorer.scoreTeams(coloredCliques, profiles);
-        System.out.println("Result of colored graph:");
-        ObjectPrinter.printTeamSetScore(score1);
+//        Team[] coloredCliques = new ColoredCliques(graph, numTeams, TEAM_SIZE, colorWeight).run(profiles);
+//        TeamSetScore score1 = ResultScorer.scoreTeams(coloredCliques, profiles);
+//        System.out.println("Result of colored graph:");
+//        ObjectPrinter.printTeamSetScore(score1);
         System.out.println("\n\n");
         GreedyCliques gc = new GreedyCliques(graph, numTeams, TEAM_SIZE, avgScore);
         Team[] teamsFromGreedy1 = gc.greedyCliques(profiles);
