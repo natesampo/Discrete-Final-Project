@@ -9,15 +9,12 @@ public class Helper {
 		// Normalize from minimum value (not including silver bullets which remain at 0) to maximum value
 		double max = 0.0;
 		double min = 100.0;
-		
-		for(int i=0; i<array.length; i++) {
-			for(int j=0; j<array[i].length; j++) {
-				if(array[i][j] > max) {
-					max = array[i][j];
-				}
-				
-				if(array[i][j] != 0.0 && array[i][j] < min) {
-					min = array[i][j];
+
+		for (double[] subArray : array) {
+			for (double d : subArray) {
+				max = Math.max(d, max);
+				if (d != 0.0 && d < min) {
+					min = d;
 				}
 			}
 		}
@@ -38,9 +35,7 @@ public class Helper {
 		//Copies an array because Java's functions weren't working well.
 		double[][] temparr = new double[arrayIn.length][arrayIn[0].length];
 		for (int i = 0; i < arrayIn.length; i++) {
-			for (int j = 0; j < arrayIn[0].length; j++) {
-				temparr[i][j] = arrayIn[i][j];
-			}
+			System.arraycopy(arrayIn[i], 0, temparr[i], 0, arrayIn[0].length);
 		}
 		return temparr;
 	}
@@ -48,27 +43,12 @@ public class Helper {
 	public static double getMinVal(double[] vals) {
 		//Get the min value in an array of doubles.
 		//It should never be higher than 1
-		double tempVal = 1;
-		for (int x = 0; x < vals.length; x ++) {
-			if (vals[x] <= tempVal) {
-				tempVal = vals[x];
-			}
+		double min = 1;
+		for (double val : vals) {
+			min = Math.min(min, val);
 		}
-		return tempVal;
+		return min;
 	}
-	
-	public static int getMinLoc(double[] vals, double val) {
-		//Get the location of the minimum value in a double array
-		int loc = -1;
-		for (int x = 0; x < vals.length; x++) {
-			if (vals[x] == val) {
-				loc = x;
-				break;
-			}
-		}
-		return loc;
-	}
-	
 	
 	public static PersonProfile[] generateProfiles(int nodes, int numSkills, int maxSilverBullets, int maxPreferredPartners, int numProjects, int projectPreferences) {
 		/*
@@ -241,17 +221,6 @@ public class Helper {
 		}
 
 		return teams;
-	}
-
-	/**
-	 * Calculates the dot product of two vectors.
-	 */
-	public static double dotProduct(int[] v1, int[] v2) {
-		double res = 0.0;
-		for (int i = 0; i < v1.length; ++i) {
-			res += v1[i] * v2[i];
-		}
-		return res;
 	}
 
 	/**

@@ -1,15 +1,7 @@
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Arrays;
 
 public class Graph {
-	private int cliqueSize;
-	private int numTeams;
 	public double[][] adjacency;
-	private HashSet<Integer> visitedNodes;
-	private HashSet<Integer> coloredClique;
-	private ArrayList<HashSet<Integer>> coloredCliques;
-	private double avgScore;
-	private double colorWeight;
 	private double skillsWeight;
 	private double projectWeight;
 	private double preferenceWeight;
@@ -116,7 +108,7 @@ public class Graph {
 					}
 					else {
 						if (adjacency[i][j] > minVal) {
-							minloc = Helper.getMinLoc(valsIgnored, minVal);
+							minloc = Arrays.asList(valsIgnored).indexOf(minVal);
 
 							valsIgnored[minloc] = adjacency[i][j];
 							locsIgnored[minloc][0] = i;

@@ -29,19 +29,17 @@ public class BruteForce {
     }
 
     //NOTE: this takes too long to feasibly run, thus the lack of it being run in hte main function.
-    public Team[] recursiveSoln(Team[] currTeam, Team[] allTeams, int maxUsed, boolean[] membersUsed, ResultScorer scorer, PersonProfile[] profiles) {
-        /*
-         * currTeam - list of the current teams generated; ideal is to use the greedy algorithm to solve this part first
-         * allTeams - List of all teams that can be formed from the person profiles
-         * maxUsed - the maximum used team so far (used for recursion)
-         * membersUsed - boolean[], indicating which students are on a team
-         * scorer - Gives a result scorer in order to know which teams are best
-         * profiles - A list of all profiles of students.
-         * return: Returns the suggested list of teams
-         */
+    /**
+     * @param currTeam - list of the current teams generated; ideal is to use the greedy algorithm to solve this part first
+     * @param allTeams - List of all teams that can be formed from the person profiles
+     * @param maxUsed - the maximum used team so far (used for recursion)
+     * @param membersUsed - boolean[], indicating which students are on a team
+     * @return the suggested list of teams
+     */
+    private Team[] recursiveSoln(Team[] currTeam, Team[] allTeams, int maxUsed, boolean[] membersUsed) {
 
         //Variable declaration
-        Team[] tempTeam = Helper.generateTeamArray(numTeams, teamSize);
+        Team[] tempTeam;
         Team[] finTeam = Helper.generateTeamArray(numTeams, teamSize);
         double score = 0.0;
         TeamSetScore tempScorer;
@@ -50,9 +48,7 @@ public class BruteForce {
         boolean validTeamSelect;
 
         //Copying over the old teams
-        for(int x = 0; x < currTeam.length; x++) {
-            newCurrTeam[x] = currTeam[x];
-        }
+        System.arraycopy(currTeam, 0, newCurrTeam, 0, currTeam.length);
 
         //Update print statements
         if(currTeam.length == 1) {
@@ -82,10 +78,10 @@ public class BruteForce {
 
                 newCurrTeam[currTeam.length] = allTeams[i];
 
-                tempTeam = recursiveSoln(newCurrTeam, allTeams, i, membersUsed, scorer, profiles);
+                tempTeam = recursiveSoln(newCurrTeam, allTeams, i, membersUsed);
 
                 if(finTeamGood) { //If we have a final team yet
-                    tempScorer = scorer.scoreTeams(tempTeam, profiles);
+                    tempScorer = ResultScorer.scoreTeams(tempTeam, profiles);
 
                     if(tempScorer.pointsSD < score) {
                         finTeam = tempTeam;
@@ -94,7 +90,7 @@ public class BruteForce {
                 }
                 else { 	//If we don't
                     finTeam = tempTeam;
-                    tempScorer = scorer.scoreTeams(tempTeam, profiles);
+                    tempScorer = ResultScorer.scoreTeams(tempTeam, profiles);
                     score = tempScorer.pointsSD;
                     finTeamGood = true;
                 }
@@ -109,7 +105,7 @@ public class BruteForce {
     }
 
     //NOTE: this takes too long to feasibly run, thus the lack of it being run in hte main function.
-    public Team[] recursiveSolnV2(Team[] currTeam, Team[] allTeams, boolean[] membersUsed, PersonProfile[] profiles) {
+    private Team[] recursiveSolnV2(Team[] currTeam, Team[] allTeams, boolean[] membersUsed, PersonProfile[] profiles) {
         /*
          * currTeam - list of the current teams generated; ideal is to use the greedy algorithm to solve this part first
          * allTeams - List of all teams that can be formed from the person profiles
@@ -137,9 +133,7 @@ public class BruteForce {
         Team[] newCurrTeam = Helper.generateTeamArray(currTeam.length + 1, teamSize);
 
         //Copy over the old team
-        for(int x = 0; x < currTeam.length; x++) {
-            newCurrTeam[x] = currTeam[x];
-        }
+        System.arraycopy(currTeam, 0, newCurrTeam, 0, currTeam.length);
 
         //Depth checking print statements
         if(currTeam.length == 1) {
