@@ -43,6 +43,5 @@ We referenced Annie Kroo’s implementation of POE teaming in an attempt to see 
 Millner, A. (2018, December 11). [POE Teaming Survey Data]. Unpublished raw data.
 We needed some physical metric of how our algorithms were doing, and we decided the best way to do this was to use some data from an Olin teaming class. As Kyle was a NINJA for POE this semester, we were granted access to the anonymized teaming data for this year’s POE teams. We used this data for testing purposes throughout our project.
 
-
 StackOverflow. (n.d.). Retrieved December 11, 2018, from https://stackoverflow.com/
 As is the norm for programmers, as we were implementing our solutions we encountered a variety of issues. The easiest way to deal with these issues was typically to visit StackOverflow. It also occasionally provided hints at ways to streamline our code.
