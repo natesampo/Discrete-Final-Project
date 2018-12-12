@@ -179,7 +179,13 @@ public class GreedyCliques {
             }
             else {
                 //TODO: implement backtracking system
-                System.out.println("Issue detected in greedyCliques.");
+                System.out.println("Issue detected in greedyCliques; making one less team.");
+                numTeams-=1;
+                Team[] newFinalTeams = Helper.generateTeamArray(numTeams, teamSize);
+                for(int i = 0; i < numTeams; i++) {
+                	newFinalTeams[i] = finalTeams[i];
+                }
+                finalTeams = newFinalTeams;
                 break;
             }
 
@@ -274,7 +280,7 @@ public class GreedyCliques {
                 teamAddition = -1;
                 for(int j = 0; j < finalTeams.length; j++) { //Find the best team
                     tempFit = getFit(finalTeams[j], i);
-                    if (tempFit > bestCurrFit && finalTeams[j].memberIds.length == teamSize) { //Determine if the team being looked at is better and is at the clique size
+                    if (tempFit > bestCurrFit && finalTeams[j].memberIds.length == teamSize && finalTeams[j].memberIds[0] != finalTeams[j].memberIds[1]) { //Determine if the team being looked at is better and is at the clique size
                         bestCurrFit = tempFit;
                         teamAddition = j;
                     }
