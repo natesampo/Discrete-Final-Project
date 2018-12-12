@@ -87,7 +87,7 @@ public class Graph {
 	/*
 	 * Do the thing where we have a second Greedy algorithm that Skips the top (numToIgnore) edges for the first two members of a group
 	 */
-	public int[] highestEdgeV2(int numToIgnore, boolean first) {
+	public int[] highestEdgeGreedy(int numToIgnore, boolean first) {
 		/**
 		 * Looking at the current adjacency matrix, find the edge with the highest value and return the corresponding nodes. New fuctionality: numToIgnore, which allows ignoring of top x edges in an attempt to make a series of teams which work together
 		 * input: adjacency (double[][]) -- The adjacency matrix
