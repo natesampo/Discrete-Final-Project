@@ -129,7 +129,7 @@ public class ResultScorer {
             teamMemberIdsSet.add(memberId);
 
         for (int memberId : team.memberIds) {
-            HashSet<Integer> preferredPartners = new HashSet<>(profiles[memberId].preferredProjects);
+            HashSet<Integer> preferredPartners = new HashSet<>(profiles[memberId].preferredPartners);
             totalRequests += preferredPartners.size();
             // Remove IDs not in team member set
             preferredPartners.retainAll(teamMemberIdsSet);
