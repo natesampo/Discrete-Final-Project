@@ -19,7 +19,7 @@ public class TeamFormer {
         //Used for random profile generation
 //		final PersonProfile[] profiles = helper.generateProfiles(numPeople, numSkills, MAX_SILVER_BULLETS, MAX_PREFERRED_PARTNERS, numProjects, MAX_PREFERRED_PROJECTS);
         //Used for referencing the POE profiles.
-        final PersonProfile[] profiles = CSVReader.readProfiles("C:\\Users\\N4tticus\\Desktop\\Teaming_Anonymized.csv");
+        final PersonProfile[] profiles = CSVReader.readProfiles("Teaming_Anonymized.csv");
 
         int numPeople = profiles.length;
         int numTeams = (int) java.lang.Math.ceil((numPeople / TEAM_SIZE));
