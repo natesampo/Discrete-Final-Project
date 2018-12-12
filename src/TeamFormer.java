@@ -1,6 +1,3 @@
-import java.util.Arrays;
-import java.util.HashSet;
-
 public class TeamFormer {
 
     private final int MAX_SILVER_BULLETS = 2;
