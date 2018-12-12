@@ -2,7 +2,31 @@
 In order to run this project, run Graph.java after compiling all classes. This will call the main method, which will run Random Teaming, Greedy Clique Creation V1, Greedy Clique Creation V2, Greedy Clique Selection, and Colored Cliques, the solutions that are feasibly runnable.
 
 ## Team Creation Priorities and Formula
+Before making any of the cliques, the group had multiple extended discussions over what is necessary to account for when creating teams as well as how heavily they should be weighted. We decided the following were all important considerations when making teams:
+* Silver bullets
+* What people were skilled in (Mechanical Design, Fabrication, ECE, Software, Design)
+* People's project preferences
+* People's partner preferences
 
+Silver bullets we tried to guarantee, and in almost all our algorithms we were able to guarantee it, but preferences were treated as just preferences overall with an emphasis in an even skill distribution. There's a lot of discussion about whether this was a fair treatment, as sometimes instead of distributing people who could be determined "poor" in terms of skill total and/or number of silver bullets accumulated they were evenly distributed amongst teams. We justify this by saying that we want everyone to have a fairly similar experience when using our algorithms for team creation. With this in mind, the algorithm we used in raw Java format to determine the strength of edge weights was:
+
+```Java
+(((p1.silverBullets.contains(p2.id) || p2.silverBullets.contains(p1.id))) ? 0 : skillsWeight * (1-(helper.dotProduct(p1.skills, p2.skills)/p1.skills.length)) + preferenceWeight * (p1.preferredPartners.contains(p2.id) ? 1 : 0) + projectWeight * sameProjects);
+```
+
+Interpreting this from left to right:
+```Java
+(((p1.silverBullets.contains(p2.id) || p2.silverBullets.contains(p1.id))) ? 0 : ...)
+```
+This component of the line checks to see if either people being considered silver bulleted each other. If one had, then the edge weight was set to 0 to represent that there was no connection between the two.
+```Java
+skillsWeight * (1-(helper.dotProduct(p1.skills, p2.skills)/p1.skills.length)) + ...;
+```
+We then consider the skill differences between the students. We do this by taking the dot product of the two, normalizing it, averaging the score by the total number of skills, then subtracting this total from 1. This meant people with complementing skills (for example, mechanical design and coding) to have a stronger edge weight, indicating that they were a better fit for a balanced team.
+```Java
+... + preferenceWeight * (p1.preferredPartners.contains(p2.id) ? 1 : 0) + projectWeight * sameProjects);
+```
+Finally, we considered students' preferences when it came to preferred partners and the similarity in projects. sameProjects was the number of projects that both students were interested in; the preferredPartners was a one-way check to see if the current person had wanted the second person. This allowed for 1-way preferredPartners, which was purposeful. Put together, we got a reasonably high level edge weighting algorithm for our project.
 
 ## Used Algorithms
 
