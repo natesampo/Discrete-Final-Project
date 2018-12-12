@@ -27,3 +27,5 @@ The greedy clique selection algorithm determined what the mean clique score shou
 ## Outcomes
 
 ## Conclusion
+
+# Annotated Bibliography
