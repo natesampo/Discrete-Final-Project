@@ -22,7 +22,8 @@ Before fully writing out how many computations were going to be necessary for th
 ### Greedy Clique Selection
 The greedy clique selection algorithm determined what the mean clique skill score should be and generates a full set of cliques with approximately that score. Any additional members are then added to the team of four where they fit best. This algorithm was all about creating teams with a balanced skill set, and although it excelled in that things such as partner and project preference were not taken into account (although silver bullets were accounted for). Therefore, a second version of the Greedy Clique selection was needed.  
 
-### Clique Coloring
+### Colored Cliques
+One of our original ideas for creating teams was to generate them based on each team member's major, and try to have a good representation of majors within each team. What we are attempting to create here is a complete set of 'rainbow cliques', teamings of 4-5 nodes with as many different majors represented as possible. This algorithm first traverses the list of profiles created to represent the students and assigns each student a major according to their reported skills. Currently, we are operating with three majors: Electrical and Computer Engineering, Software Engineering, and Mechanical Engineering. After assigning each student to one of these majors, we begin team creation.
 
 ## Outcomes
 
