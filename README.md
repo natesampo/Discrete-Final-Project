@@ -20,33 +20,13 @@ The brute force clique assignments first took all valid cliques that could be cr
 Before fully writing out how many computations were going to be necessary for the brute force clique assignments, we decided to try to make the code for brute force clique formation a lot faster. In order to do this, as cliques were selected, possible cliques that contained members of the selected clique were eliminated and not passed forward to future iterations. This allowed for significantly fewer calculations, as ~1/23 of the cliques had each member, so the algorithm had to process significantly fewer inward calculations. It was still way too large, which is why the Greedy Clique Selection algorithm was created.
 
 ### Greedy Clique Selection
-The greedy clique selection algorithm determined what the mean clique skill score should be and generates a full set of cliques with approximately that score. Any additional members are then added to the team of four where they fit best. This algorithm was all about creating teams with a balanced skill set, and although it excelled in that things such as partner and project preference were not taken into account (although silver bullets were accounted for). Therefore, a second version of the Greedy Clique selection was needed.  
+The greedy clique selection algorithm determined what the mean clique score should be by determining the mean skill total of the profiles and then multiplying it by the clique size. After this, it uses the list of all possible cliques from the students to draw teams with the closest score to the mean possible. Any additional members are then added to the team of four where they fit best. This was a compromise between checking all possible cliques and creating more balanced cliques.
 
 ### Colored Cliques
-One of our original ideas for creating teams was to generate them based on each team member's major, and try to have a good representation of majors within each team. What we are attempting to create here is a complete set of 'rainbow cliques', teamings of 4-5 nodes with as many different majors represented as possible. This algorithm first traverses the list of profiles created to represent the students and assigns each student a major according to their reported skills. Currently, we are operating with three majors: Electrical and Computer Engineering, Software Engineering, and Mechanical Engineering. After assigning each student to one of these majors, we begin team creation.
+One of our original ideas for creating teams was to generate them based on each team member's major, and try to have a good representation of majors within each team. What we are attempting to create here is a complete set of 'rainbow cliques', teamings of 4-5 nodes with as many different majors represented as possible. This algorithm first traverses the list of profiles created to represent the students and assigns each student a major according to their reported skills. Currently, we are operating with three majors: Electrical and Computer Engineering, Software Engineering, and Mechanical Engineering. After assigning each student to one of these majors, we begin team creation. This is done in a greedy fashion, where we identify the highest edge weight in the graph between two students of different majors and assign those two to a team. All other students with the same majors as the two already chosen students have reduced edge weights to encourage other majors and discourage the same majors. We continue this pattern for every member of every team until every team has 4 people on it, a typical PoE team size. After every team has 4 members, any leftover members are assigned onto teams based on where they would fit best, keeping in mind how many of each major each team already has and the major of each leftover person.
 
 ## Outcomes
 
 ## Conclusion
 
 # Annotated Bibliography
-
-Anderson, R. (n.d.). Windows. Retrieved December 11, 2018, from http://everythingcomputerscience.com/algorithms/Greedy_Algorithm.html
-
-We were looking for a good overview of what a greedy algorithm was, and found this website. It has an overall good overview of it as well as some source code that we could reference outside of our personal experiences. As all team members were familiar at a high level with how to write different greedy algorithms, the heart of the discussion we typically faced was what should we be focusing on while creating cliques.
-
-Angles d’Auriac, J., El Maftouhi, H., Legay, S., Cohen, N., Harutyunyan, A., & Manoussakis, Y. (2016, July 26). Connected Tropical Subgraphs in Vertex-Colored Graphs(Rep.). Retrieved December 11, 2018, from Discrete Mathematics and Theoretical Computer Science website: https://www.dmtcs.org/dmtcs-ojs/index.php/dmtcs/article/download/2765/4764.pdf
-
-We used this source in order to read more about tropical graphs and subgraphs as well as provide insight into how we could best approach this program algorithmically. Sarah had suggested that we review this document, and it was very helpful.
-
-*Graph Coloring Exploration* (Tech.). (n.d.). Retrieved December 11, 2018, from Sarah Spence Adams website: https://drive.google.com/open?id=16IaoO2pte9BbkEVT_uXAsTyPGf3PUMgq
-
-We referenced Annie Kroo’s implementation of POE teaming in an attempt to see another way that the same teaming that we were attempting was accomplished. Although it was useful to look at, we ended up mostly defining our own ways to solve things based on what we researched and were familiar with.
-
-Millner, A. (2018, December 11). [POE Teaming Survey Data]. Unpublished raw data.
-
-We needed some physical metric of how our algorithms were doing, and we decided the best way to do this was to use some data from an Olin teaming class. As Kyle was a NINJA for POE this semester, we were granted access to the anonymized teaming data for this year’s POE teams. We used this data for testing purposes throughout our project.
-
-StackOverflow. (n.d.). Retrieved December 11, 2018, from https://stackoverflow.com/
-
-As is the norm for programmers, as we were implementing our solutions we encountered a variety of issues. The easiest way to deal with these issues was typically to visit StackOverflow. It also occasionally provided hints at ways to streamline our code.
