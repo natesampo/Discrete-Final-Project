@@ -52,27 +52,27 @@ public class Graph {
 		return (((p1.silverBullets.contains(p2.id) || p2.silverBullets.contains(p1.id))) ? 0 : skillsWeight * (1-(Helper.dotProduct(p1.skills, p2.skills)/p1.skills.length)) + (p1.preferredPartners.contains(p2.id) ? preferenceWeight : 0) + projectWeight * sameProjects);
 	}
 
-//	public int[] highestEdge() {
-//		/**
-//		 * Looking at the current adjacency matrix, find the edge with the highest value and return the corresponding nodes
-//		 * input: adjacency (double[][]) -- The adjacency matrix
-//		 * output: locs (int[2]) -- locations of nodes whose edge is highest.
-//		 */
-//		int[] locs = new int[2];
-//		double currHigh = 0.0;
-//
-//		for(int i = 0; i < adjacency.length; i ++) {
-//			for (int j = 0; j < adjacency[0].length; j++) {
-//				if (adjacency[i][j] > currHigh && i != j) { //Loop through, finding and updating highest edge
-//					currHigh = adjacency[i][j];
-//					locs[0] = i;
-//					locs[1] = j;
-//				}
-//			}
-//		}
-//
-//		return locs;
-//	}
+	public int[] highestEdge() {
+		/**
+		 * Looking at the current adjacency matrix, find the edge with the highest value and return the corresponding nodes
+		 * input: adjacency (double[][]) -- The adjacency matrix
+		 * output: locs (int[2]) -- locations of nodes whose edge is highest.
+		 */
+		int[] locs = new int[2];
+		double currHigh = 0.0;
+
+		for(int i = 0; i < adjacency.length; i ++) {
+			for (int j = 0; j < adjacency[0].length; j++) {
+				if (adjacency[i][j] > currHigh && i != j) { //Loop through, finding and updating highest edge
+					currHigh = adjacency[i][j];
+					locs[0] = i;
+					locs[1] = j;
+				}
+			}
+		}
+
+		return locs;
+	}
 
 	/*
 	 * Do the thing where we have a second Greedy algorithm that Skips the top (numToIgnore) edges for the first two members of a group
@@ -168,6 +168,41 @@ public class Graph {
 			System.out.println("Impossible!");
 			return loc;
 		}
+	}
+	
+	public int alwaysHighestNode(int[] neighbors) {
+		/**
+		 * Looking at the current adjacency matrix, find the edge with the highest value and return the corresponding nodes
+		 * input: adjacency (double[][]) -- The adjacency matrix
+		 * input: neighbors (int[]) -- A list of the current nodes in the group (or neighbors we are looking at)
+		 * output: loc (int) -- location of node who fits best.
+		 */
+		int loc = -1;
+		double currHigh = 0.0;
+		double tempVal = 1.0;
+		for (int x = 0; x < adjacency.length; x++) { //loop through other members to see how good they fit
+			tempVal = 1.0;
+			for (int j = 0; j < neighbors.length; j++) { //check how they fit with each other group member
+				//  Make sure that x isn't a neighbor; make sure there is a neighbor in the slot being looked at; make sure there is a valid connection
+				if (!Helper.searchArray(neighbors, x) && neighbors[j] != -1 && adjacency[x][neighbors[j]] > 0) {//j isn't in neighbors{
+					tempVal = tempVal * adjacency[x][neighbors[j]];
+				}
+				else {
+					tempVal = 0.0;
+				}
+
+			}
+			
+			//If the new calculated value is higher than the old saved one
+			if (tempVal > currHigh) {
+				currHigh = tempVal;
+				loc = x;
+			}
+			
+		}
+		
+		System.out.println(tempVal);
+		return loc;
 	}
 
 }

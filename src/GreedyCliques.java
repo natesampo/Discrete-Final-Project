@@ -250,6 +250,7 @@ public class GreedyCliques {
             finalTeams[i] = tempTeams[i];
         }
 
+        Helper.shuffleArray(finalTeams, teamSize);
         return finalTeams;
     }
 

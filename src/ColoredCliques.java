@@ -80,7 +80,7 @@ public class ColoredCliques {
                         silverBulleted = false;
 
                         // See if we can add this person to the team
-                        potentialMember = graph.highestNode(Arrays.copyOfRange(teams[i].memberIds, 0, j));
+                        potentialMember = scratchGraph.highestNode(Arrays.copyOfRange(teams[i].memberIds, 0, j));
 
                         // Check every potential teammate for silver bullets to this person
                         for (int k=0; k<teams[i].memberIds.length; k++) {
@@ -88,8 +88,8 @@ public class ColoredCliques {
                             // If someone has silver bulleted this person, go through every other team member and prevent them from picking this person
                             if (profiles[teams[i].memberIds[k]].silverBullets.contains(potentialMember)) {
                                 for (int l=0; l<teams[i].memberIds.length; l++) {
-                                    graph.adjacency[teams[i].memberIds[l]][potentialMember] = -1;
-                                    graph.adjacency[potentialMember][teams[i].memberIds[l]] = -1;
+                                    scratchGraph.adjacency[teams[i].memberIds[l]][potentialMember] = -1;
+                                    scratchGraph.adjacency[potentialMember][teams[i].memberIds[l]] = -1;
                                 }
 
                                 silverBulleted = true;
@@ -104,10 +104,10 @@ public class ColoredCliques {
             }
 
             // Stop selecting the same person in the future
-            for (int j=0; j<graph.getNodeCount(); j++) {
+            for (int j=0; j<scratchGraph.getNodeCount(); j++) {
                 for (int k=0; k<teamSize; k++) {
-                    graph.adjacency[teams[i].memberIds[k]][j] = -1;
-                    graph.adjacency[j][teams[i].memberIds[k]] = -1;
+                    scratchGraph.adjacency[teams[i].memberIds[k]][j] = -1;
+                    scratchGraph.adjacency[j][teams[i].memberIds[k]] = -1;
                 }
             }
         }

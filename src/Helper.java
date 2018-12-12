@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Helper {
@@ -384,6 +385,23 @@ public class Helper {
 			}
 		}
 		return false;
+	}
+	
+	public static void shuffleArray(Team[] allTeams, int cliqueSize)
+	{
+	    int index;
+	    Random random = new Random();
+	    Team tempTeam = new Team(cliqueSize);
+	    for (int i = allTeams.length - 1; i > 0; i--)
+	    {
+	        index = random.nextInt(i + 1);
+	        if (index != i)
+	        {
+	        	tempTeam = allTeams[index];
+	        	allTeams[i] = allTeams[index];
+	        	allTeams[index] = allTeams[i];
+	        }
+	    }
 	}
 
 }
