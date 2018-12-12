@@ -135,15 +135,22 @@ public class ResultScorer {
         HashSet<Integer> teamMemberIdsSet = new HashSet<>();
         for (int memberId : team.memberIds)
             teamMemberIdsSet.add(memberId);
+        
 
         for (int memberId : team.memberIds) {
             HashSet<Integer> preferredPartners = new HashSet<>(profiles[memberId].preferredPartners);
-            totalRequests += preferredPartners.size();
             // Remove IDs not in team member set
+            totalRequests += preferredPartners.size();
             preferredPartners.retainAll(teamMemberIdsSet);
             totalMet += preferredPartners.size();
+          
         }
+        if(totalRequests != 0) {
         score.partnerPreferenceMetPercentage = (double)totalMet / (double)totalRequests;
+        }
+        else {
+        	score.partnerPreferenceMetPercentage = 1.0;
+        }
 
         team.score = score;
         return score;

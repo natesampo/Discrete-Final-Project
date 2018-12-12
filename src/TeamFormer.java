@@ -38,10 +38,10 @@ public class TeamFormer {
         System.out.println("Result of random teams:");
         ObjectPrinter.printTeamSetScore(score0);
         System.out.println("\n\n");
-//        Team[] coloredCliques = new ColoredCliques(graph, numTeams, TEAM_SIZE, colorWeight).run(profiles);
-//        TeamSetScore score1 = ResultScorer.scoreTeams(coloredCliques, profiles);
-//        System.out.println("Result of colored graph:");
-//        ObjectPrinter.printTeamSetScore(score1);
+        Team[] coloredCliques = new ColoredCliques(graph, numTeams, TEAM_SIZE, colorWeight).run(profiles);
+        TeamSetScore score1 = ResultScorer.scoreTeams(coloredCliques, profiles);
+        System.out.println("Result of colored graph:");
+        ObjectPrinter.printTeamSetScore(score1);
         System.out.println("\n\n");
         GreedyCliques gc = new GreedyCliques(graph, numTeams, TEAM_SIZE, avgScore);
         Team[] teamsFromGreedy1 = gc.greedyCliques(profiles);
@@ -57,6 +57,8 @@ public class TeamFormer {
         System.out.println("\n\n");
         Team[] teamsFromAllCliques = gc.allCliques(profiles);
         ResultScorer.scoreTeams(teamsFromAllCliques, profiles);
+        
+        //If you ever have the compute power, uncomment the below to run the bruteforce clique selection
 //		Team[] bruteTeams = bruteCliques(teamsFromAllCliques, scorer, profiles);
 ////		Team[] topTeams = topTeams(teamsFromAllCliques);
 //		ObjectPrinter.printTeamArray(bruteTeams);
@@ -67,8 +69,7 @@ public class TeamFormer {
         TeamSetScore score4 = ResultScorer.scoreTeams(greedyCliqueTeams, profiles);
         System.out.println("Result of runnable allClique implementation:");
         ObjectPrinter.printTeamSetScore(score4);
-        System.out.println("we good.");
-        System.out.printf("Avgscore: %f", avgScore);
+        System.out.printf("The average score of all teams for reference purposes: %f", avgScore);
     }
 
 
