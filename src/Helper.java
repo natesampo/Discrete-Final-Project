@@ -40,7 +40,7 @@ public class Helper {
 		return temparr;
 	}
 	
-	public static double getMinVal(double[] vals) {
+	public static double arrayMinElement(double[] vals) {
 		//Get the min value in an array of doubles.
 		//It should never be higher than 1
 		double min = 1;
@@ -49,6 +49,15 @@ public class Helper {
 		}
 		return min;
 	}
+
+	public static int arrayIndexOf(double[] hackstack, double needle) {
+		//Get the location of the minimum value in a double array
+		for (int i = 0; i < hackstack.length; i++)
+			if (hackstack[i] == needle)
+				return i;
+		return -1;
+	}
+
 	
 	public static PersonProfile[] generateProfiles(int nodes, int numSkills, int maxSilverBullets, int maxPreferredPartners, int numProjects, int projectPreferences) {
 		/*

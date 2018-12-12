@@ -1,5 +1,3 @@
-import java.util.Arrays;
-
 public class Graph {
 	public double[][] adjacency;
 	private double skillsWeight;
@@ -100,7 +98,7 @@ public class Graph {
 		}
 		
 		double minVal = 0;
-		int minloc = 0;
+		int minLoc = 0;
 
 		//Loop through every edge possible
 		for(int i = 0; i < adjacency.length; i ++) {
@@ -113,24 +111,24 @@ public class Graph {
 						locsIgnored[numIgnored][1] = j;
 						numIgnored = numIgnored + 1;
 						if(numIgnored == numToIgnore + 1) {
-							minVal = Helper.getMinVal(valsIgnored);
+							minVal = Helper.arrayMinElement(valsIgnored);
 						}
 					}
 					else {
 						if (adjacency[i][j] > minVal) {
-							minloc = Arrays.asList(valsIgnored).indexOf(minVal);
+							minLoc = Helper.arrayIndexOf(valsIgnored, minVal);
 
-							valsIgnored[minloc] = adjacency[i][j];
-							locsIgnored[minloc][0] = i;
-							locsIgnored[minloc][1] = j;
-							minVal = Helper.getMinVal(valsIgnored);
+							valsIgnored[minLoc] = adjacency[i][j];
+							locsIgnored[minLoc][0] = i;
+							locsIgnored[minLoc][1] = j;
+							minVal = Helper.arrayMinElement(valsIgnored);
 						}
 					}
 				}
 			}
 		}
 
-		return locsIgnored[minloc];
+		return locsIgnored[minLoc];
 	}
 
 
