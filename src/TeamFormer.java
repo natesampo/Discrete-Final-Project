@@ -17,8 +17,8 @@ public class TeamFormer {
         double[] skillsWeights = new double[]{0.2, 0.4, 0.6};
         double[] partnerWeights = new double[]{0.7, 1};
         double[] projectWeights = new double[]{0.5, 1};
+        double[] colorWeights = new double[]{1.1, 1.5, 2.0};
 
-        double colorWeight = 1.1;
         PersonProfile[] profiles;
         if (filename != null) {
             profiles = CSVReader.readProfiles(filename);
@@ -42,14 +42,13 @@ public class TeamFormer {
         graph = new Graph(profiles, SKILLS_WEIGHT, PARTNER_PREFERENCE_WEIGHT, PROJECT_PREFERENCE_WEIGHT);
         graph.adjacency = Helper.normalize(graph.adjacency);
         GreedyCliques gc = new GreedyCliques(graph, numTeams, TEAM_SIZE, avgScore);
-        Team[] teamsFromAllCliques = gc.allCliques(profiles);
-        ResultScorer.scoreTeams(teamsFromAllCliques, profiles);
+
+        // Sweep weights for greedy v1
+        System.out.println("Greedy cliques");
+        LinkedList<TeamSetScore> scores = new LinkedList<>();
         for (double skillsWeight : skillsWeights) {
             for (double partnerWeight : partnerWeights) {
                 for (double projectWeight : projectWeights) {
-                    System.out.println("Using skills weight: " + skillsWeight + ", partner weight: " + partnerWeight + ", and skill project weight: " + projectWeight);
-                    LinkedList<TeamSetScore> scores = new LinkedList<>();
-
                     // Generate a graph using the current weights
                     graph = new Graph(profiles, skillsWeight, partnerWeight, projectWeight);
                     graph.adjacency = Helper.normalize(graph.adjacency);
@@ -57,34 +56,52 @@ public class TeamFormer {
                     // First greedy implementation
                     gc = new GreedyCliques(graph, numTeams, TEAM_SIZE, avgScore);
                     scores.add(ResultScorer.scoreTeams(gc.greedyCliques(profiles), profiles));
-//                    TeamSetScore score2 = ResultScorer.scoreTeams(teamsFromGreedy1, profiles);
-//                    System.out.println("Result of first greedy implementation:");
-//                    ObjectPrinter.printTeamSetScore(score2);
 
-                    // Second greedy implementation
-                    scores.add(ResultScorer.scoreTeams(gc.runV2(0, profiles), profiles));
-//                    TeamSetScore score3 = ResultScorer.scoreTeams(teamsFromGreedy2, profiles);
-//                    System.out.println("Result of second greedy implementation:");
-//                    ObjectPrinter.printTeamSetScore(score3);
-
-                    scores.add(ResultScorer.scoreTeams(gc.greedyCliques(teamsFromAllCliques, profiles), profiles));
-//		ObjectPrinter.printTeamArray(greedyCliqueTeams);
-//                    TeamSetScore score4 = ResultScorer.scoreTeams(greedyCliqueTeams, profiles);
-//                    System.out.println("Result of runnable allClique implementation:");
-//                    ObjectPrinter.printTeamSetScore(score4);
-
-                    ObjectPrinter.printTeamSetScoreList(scores);
                 }
             }
         }
+        ObjectPrinter.printTeamSetScoreList(scores);
+        Team[] teamsFromAllCliques = gc.allCliques(profiles);
+        ResultScorer.scoreTeams(teamsFromAllCliques, profiles);
 
-//        Team[] coloredCliques = new ColoredCliques(graph, numTeams, TEAM_SIZE, colorWeight).run(profiles);
-//        TeamSetScore score1 = ResultScorer.scoreTeams(coloredCliques, profiles);
-//        System.out.println("Result of colored graph:");
-//        ObjectPrinter.printTeamSetScore(score1);
-//        System.out.println("\n\n");
-//        System.out.println("\n\n");
-//        GreedyCliques gc = new GreedyCliques(graph, numTeams, TEAM_SIZE, avgScore);
+        // Second greedy implementation
+        System.out.println("Greedy v2");
+        scores = new LinkedList<>();
+        for (double skillsWeight : skillsWeights) {
+            for (double partnerWeight : partnerWeights) {
+                for (double projectWeight : projectWeights) {
+                    // Generate a graph using the current weights
+                    graph = new Graph(profiles, skillsWeight, partnerWeight, projectWeight);
+                    graph.adjacency = Helper.normalize(graph.adjacency);
+                    scores.add(ResultScorer.scoreTeams(gc.runV2(0, profiles), profiles));
+                }
+            }
+        }
+        ObjectPrinter.printTeamSetScoreList(scores);
+
+
+        // Second greedy implementation
+        System.out.println("Greedy cliques using all cliques");
+        scores = new LinkedList<>();
+        for (double skillsWeight : skillsWeights) {
+            for (double partnerWeight : partnerWeights) {
+                for (double projectWeight : projectWeights) {
+                    // Generate a graph using the current weights
+                    graph = new Graph(profiles, skillsWeight, partnerWeight, projectWeight);
+                    graph.adjacency = Helper.normalize(graph.adjacency);
+                    scores.add(ResultScorer.scoreTeams(gc.greedyCliques(teamsFromAllCliques, profiles), profiles));
+                }
+            }
+        }
+        ObjectPrinter.printTeamSetScoreList(scores);
+
+        System.out.println("Result of colored cliques:");
+        scores = new LinkedList<>();
+        for (double colorWeight : colorWeights) {
+            Team[] coloredCliques = new ColoredCliques(graph, numTeams, TEAM_SIZE, colorWeight).run(profiles);
+            scores.add(ResultScorer.scoreTeams(coloredCliques, profiles));
+        }
+        ObjectPrinter.printTeamSetScoreList(scores);
 
         //If you ever have the compute power, uncomment the below to run the bruteforce clique selection
 //		Team[] bruteTeams = bruteCliques(teamsFromAllCliques, scorer, profiles);
