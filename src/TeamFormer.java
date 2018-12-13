@@ -73,6 +73,8 @@ public class TeamFormer {
                     // Generate a graph using the current weights
                     graph = new Graph(profiles, skillsWeight, partnerWeight, projectWeight);
                     graph.adjacency = Helper.normalize(graph.adjacency);
+
+                    gc = new GreedyCliques(graph, numTeams, TEAM_SIZE, avgScore);
                     scores.add(ResultScorer.scoreTeams(gc.runV2(0, profiles), profiles));
                 }
             }
@@ -89,6 +91,8 @@ public class TeamFormer {
                     // Generate a graph using the current weights
                     graph = new Graph(profiles, skillsWeight, partnerWeight, projectWeight);
                     graph.adjacency = Helper.normalize(graph.adjacency);
+
+                    gc = new GreedyCliques(graph, numTeams, TEAM_SIZE, avgScore);
                     scores.add(ResultScorer.scoreTeams(gc.greedyCliques(teamsFromAllCliques, profiles), profiles));
                 }
             }

@@ -52,6 +52,25 @@ public class ObjectPrinter {
         System.out.println(sb.toString());
     }
 
+    public static void printSetScoreListForMatlab(List<TeamSetScore> scores) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Tot skill range\tTotal SD\tPart prefs met\tCommon proj\n");
+        sb.append("[\n");
+        for (TeamSetScore score : scores) {
+            appendDouble(sb, score.totalSkillMax - score.totalSkillMin);
+            sb.append(", ");
+            appendDouble(sb, score.pointsSD);
+            sb.append(", ");
+            appendDouble(sb, score.meanPartPrefsSatisfied);
+            sb.append(", ");
+            appendDouble(sb, score.meanFractionTeamMembersWithCommonProject);
+
+            sb.append(";\n");
+        }
+        sb.append("]");
+        System.out.println(sb.toString());
+    }
+
     public static void printTeamArray(Team[] teams) {
         System.out.println("Valid?\tTotal pts\tSkill total\tSkill range\tSkill mean\tSkill SD\tMean pts\tPart prefs\tCommon proj");
         for (Team t : teams) {
