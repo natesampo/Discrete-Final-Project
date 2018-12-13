@@ -59,10 +59,10 @@ One of our original ideas for creating teams was to generate them based on each 
 ![alt text](https://raw.githubusercontent.com/natesampo/Discrete-Final-Project/master/charts/chart3.png "Range of Teams' Total Skill")
 
 ### Time Complexity of Each Algorithm
-**Random Teams:** O(n)
-**Greedy Clique Creation:** O(n^3)
-**Greedy Clique Selection:** O(number of cliques ^ number of teams)
-**Colored Cliques:** O(n^2)
+* **Random Teams:** O(n)
+* **Greedy Clique Creation:** O(n^3)
+* **Greedy Clique Selection:** O(number of cliques ^ number of teams)
+* **Colored Cliques:** O(n^2)
 
 ## Conclusion
 ### Pros and Cons of Each Algorithm
