@@ -3,11 +3,10 @@ public class TeamSetScore {
     public boolean allTeamsValid;
     public TeamScore[] teamScores;
     public double[] pointsBySkillSD;
-    public double totalSkillRange;
-    public double totalSkillSD;
     public double totalSkillMin;
     public double totalSkillMax;
     public double meanPartPrefsSatisfied;
+    public double meanFractionTeamMembersWithCommonProject;
 
     public double pointsSD;
 

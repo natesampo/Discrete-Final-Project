@@ -32,18 +32,20 @@ public class ObjectPrinter {
         sb.append("Valid?\tTot skill min\tTot skill max\tTot skill range\tPts by skill total SD\tTotal SD\tPart prefs met\tCommon proj\n");
         for (TeamSetScore score : scores) {
             sb.append(score.allTeamsValid ? "1" : "0");
-            sb.append('\t');
+            sb.append("\t\t");
             appendDouble(sb, score.totalSkillMin);
-            sb.append('\t');
+            sb.append("\t\t\t");
             appendDouble(sb, score.totalSkillMax);
-            sb.append('\t');
+            sb.append("\t\t\t");
             appendDouble(sb, score.totalSkillMax - score.totalSkillMin);
-            sb.append('\t');
+            sb.append("\t\t\t");
             appendArray(sb, score.pointsBySkillSD);
-            sb.append('\t');
+            sb.append("\t\t");
             appendDouble(sb, score.pointsSD);
-            sb.append('\t');
+            sb.append("\t\t");
             appendDouble(sb, score.meanPartPrefsSatisfied);
+            sb.append("\t\t\t");
+            appendDouble(sb, score.meanFractionTeamMembersWithCommonProject);
 
             sb.append('\n');
         }

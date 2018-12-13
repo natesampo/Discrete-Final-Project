@@ -39,6 +39,11 @@ public class ResultScorer {
 
         setScore.meanPartPrefsSatisfied = partPrefRunningTotal / teams.length;
 
+        // Calculate mean fraction of team members share common project interest
+        double fractionCommonProjectRunningTotal = 0;
+        for (TeamScore teamScore : setScore.teamScores)
+            fractionCommonProjectRunningTotal += teamScore.fractionTeamMembersWithCommonProject;
+        setScore.meanFractionTeamMembersWithCommonProject = fractionCommonProjectRunningTotal / teams.length;
 
         return setScore;
     }
