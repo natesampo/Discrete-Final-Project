@@ -53,10 +53,10 @@ The greedy clique selection algorithm determined what the mean clique score shou
 One of our original ideas for creating teams was to generate them based on each team member's major, and try to have a good representation of majors within each team. What we are attempting to create here is a complete set of 'rainbow cliques', teamings of 4-5 nodes with as many different colors (majors) represented as possible. This algorithm first traverses the list of profiles created to represent the students and assigns each student a major according to their reported skills. Currently, we are operating with three majors: Electrical and Computer Engineering, Software Engineering, and Mechanical Engineering. After assigning each student to one of these majors, we begin team creation. This is done in a greedy fashion, where we identify the highest edge weight in the graph between two students of different majors and assign those two to a team. All other students with the same majors as the two already chosen students have reduced edge weights to encourage other majors and discourage the same majors. We continue this pattern for every member of every team until every team has 4 people on it, a typical PoE team size. After every team has 4 members, any leftover members are assigned onto teams based on where they would fit best, keeping in mind how many of each major each team already has and the major of each leftover person.
 
 ## Outcomes
-![alt text](https://github.com/natesampo/Discrete-Final-Project/charts/chart.png "Average Team Project Preference Overlap")
-![alt text](https://github.com/natesampo/Discrete-Final-Project/charts/chart1.png "Percent of Partner Preferences Met")
-![alt text](https://github.com/natesampo/Discrete-Final-Project/charts/chart2.png "Highest and Lowest Skill Teams")
-![alt text](https://github.com/natesampo/Discrete-Final-Project/charts/chart3.png "Range of Teams' Total Skill")
+![alt text](https://raw.githubusercontent.com/natesampo/Discrete-Final-Project/master/charts/chart3.png "Average Team Project Preference Overlap")
+![alt text](https://raw.githubusercontent.com/natesampo/Discrete-Final-Project/master/charts/chart3.png "Percent of Partner Preferences Met")
+![alt text](https://raw.githubusercontent.com/natesampo/Discrete-Final-Project/master/charts/chart3.png "Highest and Lowest Skill Teams")
+![alt text](https://raw.githubusercontent.com/natesampo/Discrete-Final-Project/master/charts/chart3.png "Range of Teams' Total Skill")
 
 
 ## Conclusion
