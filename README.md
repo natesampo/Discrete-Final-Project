@@ -58,8 +58,30 @@ One of our original ideas for creating teams was to generate them based on each 
 ![alt text](https://raw.githubusercontent.com/natesampo/Discrete-Final-Project/master/charts/chart2.png "Highest and Lowest Skill Teams")
 ![alt text](https://raw.githubusercontent.com/natesampo/Discrete-Final-Project/master/charts/chart3.png "Range of Teams' Total Skill")
 
+### Time Complexity of Each Algorithm
+**Random Teams:** O(n)
+**Greedy Clique Creation:** O(n^3)
+**Greedy Clique Selection:** O(number of cliques ^ number of teams)
+**Colored Cliques:** O(n^2)
 
 ## Conclusion
+### Pros and Cons of Each Algorithm
+#### Random Teams
+Pros: VERY Fast
+Cons: Doesn't care about you
+
+#### Greedy Clique Creation
+Pros: Relatively fast, creates good teams, and meets many partner and project preferences
+Cons: Will sometimes create lopsided teams, additional time complexity when stuck with people who have silver bulleted one another at the end
+
+#### Greedy Clique Selection
+Pros: Creates teams that are very good on average, slim distribution of team skills
+Cons: Slow, bias towards similarly numbered individuals, often ignores partner and project preferences
+
+#### Colored Cliques
+Pros: Fast, inexpensive algorithm, meets most partner and project preferences, standard deviation between teams' skills is very low
+Cons: Average team score is often lower than some other algorithms, sometimes ignores partner preferences of the same major
+
 
 # Annotated Bibliography
 #### Anderson, R. (n.d.). Windows. Retrieved December 11, 2018, from http://everythingcomputerscience.com/algorithms/Greedy_Algorithm.html
