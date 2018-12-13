@@ -68,18 +68,22 @@ One of our original ideas for creating teams was to generate them based on each 
 ### Pros and Cons of Each Algorithm
 #### Random Teams
 Pros: VERY Fast
+
 Cons: Doesn't care about you
 
 #### Greedy Clique Creation
 Pros: Relatively fast, creates good teams, and meets many partner and project preferences
+
 Cons: Will sometimes create lopsided teams, additional time complexity when stuck with people who have silver bulleted one another at the end
 
 #### Greedy Clique Selection
 Pros: Creates teams that are very good on average, slim distribution of team skills
+
 Cons: Slow, bias towards similarly numbered individuals, often ignores partner and project preferences
 
 #### Colored Cliques
 Pros: Fast, inexpensive algorithm, meets most partner and project preferences, standard deviation between teams' skills is very low
+
 Cons: Average team score is often lower than some other algorithms, sometimes ignores partner preferences of the same major
 
 
