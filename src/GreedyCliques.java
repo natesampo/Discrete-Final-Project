@@ -41,7 +41,8 @@ public class GreedyCliques {
                 else { //If we want to find the node that best fits with our current team
                     newNeighbor = scratchGraph.highestNode(Arrays.copyOfRange(proposedTeams[teamNum].memberIds, 0, memNum));
                     proposedTeams[teamNum].memberIds[memNum] = newNeighbor;
-                    peepsUsed[newNeighbor] = true;
+                    if (newNeighbor >= 0)
+                        peepsUsed[newNeighbor] = true;
                 }
             }
 
@@ -302,7 +303,8 @@ public class GreedyCliques {
          */
         double fit = 1.0;
         for (int i : team.memberIds) {
-            fit = fit * graph.adjacency[person][i];
+            if (i != -1)
+                fit = fit * graph.adjacency[person][i];
         }
         return fit;
     }

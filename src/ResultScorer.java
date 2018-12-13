@@ -54,7 +54,7 @@ public class ResultScorer {
         HashSet<Integer> teamMembers = new HashSet<>();
         HashSet<Integer> silverBullets = new HashSet<>();
         for (int memberId : team.memberIds) {
-        	if(memberId < profiles.length) {
+        	if(memberId != -1 && memberId < profiles.length) {
 		        teamMembers.add(memberId);
 		        silverBullets.addAll(profiles[memberId].silverBullets);
         	}
@@ -138,6 +138,8 @@ public class ResultScorer {
             teamMemberIdsSet.add(memberId);
 
         for (int memberId : team.memberIds) {
+            if (memberId == -1)
+                continue;
             HashSet<Integer> preferredPartners = new HashSet<>(profiles[memberId].preferredPartners);
             // Remove IDs not in team member set
             totalRequests += preferredPartners.size();
@@ -157,6 +159,8 @@ public class ResultScorer {
         totalMet = 0;
         HashMap<Integer,Integer> preferredProjects = new HashMap<>();
         for (int memberId : team.memberIds) {
+            if (memberId == -1)
+                continue;
             for (int projectId : profiles[memberId].preferredProjects) {
                 if (preferredProjects.containsKey(projectId)) {
                     preferredProjects.put(projectId, preferredProjects.get(projectId) + 1);

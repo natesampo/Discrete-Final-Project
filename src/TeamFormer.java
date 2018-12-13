@@ -15,8 +15,8 @@ public class TeamFormer {
     public TeamFormer(String filename) {
 
         double[] skillsWeights = new double[]{0.2, 0.4, 0.6};
-        double[] partnerWeights = new double[]{0.2, 0.5, 1};
-        double[] projectWeights = new double[]{0.2, 0.5, 1};
+        double[] partnerWeights = new double[]{0.7, 1};
+        double[] projectWeights = new double[]{0.5, 1};
 
         double colorWeight = 1.1;
         PersonProfile[] profiles;
