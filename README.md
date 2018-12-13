@@ -96,7 +96,7 @@ We've identified several potential use cases for our algorithms based upon teami
 * Team members don't know each other well
 * Team members don't know much about the projects
 
-**Greedy Clique Selection**
+*Greedy Clique Selection*
 
 Because this algorithm typically only takes skill orthogonality into consideration and often disregards partner and project preferences, it makes sense to use it in a situation where partner and projects preferences mean little, as this is the students' first semester at Olin.
 
@@ -104,7 +104,7 @@ Because this algorithm typically only takes skill orthogonality into considerati
 * Team member skills don't matter as much
 * Partner and project preferences matter
 
-**Colored Cliques** or **Greedy Clique Creation**
+*Colored Cliques* or *Greedy Clique Creation*
 
 As Products and Markets is not a typical Engineering course, Engineering skills matter little. Partner and projects preferences weigh heavily into successful teaming here and the two algorithms that accomplish those best are Greedy Clique Creation and Colored Cliques.
 
@@ -113,7 +113,7 @@ As Products and Markets is not a typical Engineering course, Engineering skills 
 * Silver bullets are especially important
 * Partner and project preferences are less important
 
-**Greedy Clique Selection**
+*Greedy Clique Selection*
 
 For a successful teaming experience in Principles of Engineering, it is integral that teams' skills are well balanced and as high as possible. Because Greedy Clique Selection accomplishes creating the highest average team skills while maintaining a low standard deviation, we recommend its use here.
 
@@ -122,7 +122,7 @@ For a successful teaming experience in Principles of Engineering, it is integral
 * Silver bullets are especially important
 * Partner and project preferences are important
 
-**Colored Cliques**
+*Colored Cliques*
 
 For teaming in SCOPE, we are looking for an algorithm that accomplishes most partner and project preferences, while maintaining a relatively even distribution of teams. The algorithm that does this best is Colored Cliques, thus our recommendation for its use in SCOPE.
 
